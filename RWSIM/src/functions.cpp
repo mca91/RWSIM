@@ -17,7 +17,7 @@ using namespace Rcpp;
 // [[Rcpp::export]]
 arma::vec seq_cpp(const int& lo,
                   const int& hi) {
-
+  
   int n = hi - lo + 1;
   arma::vec sequence(n);
   for(int i = 0; i < n; i++) {
@@ -35,7 +35,7 @@ arma::vec seq_cpp(const int& lo,
 arma::mat mlag(const arma::mat& dat,
                const int& p,
                const bool& drop) {
-
+  
   // initialize output matrix with desiered dimensions and
   // fill with ones
   arma::mat out(dat.n_rows * (dat.n_cols-p), p+1, fill::ones);
@@ -62,7 +62,7 @@ arma::mat mlag(const arma::mat& dat,
 arma::mat mdiff(const arma::mat& dat,
                 const int& p,
                 const bool& drop) {
-
+  
   // output matrix dimensions
   int M = dat.n_cols - p, N = dat.n_rows;
   // initialize output matrix
@@ -88,20 +88,20 @@ arma::mat DF_Reg_Mat(const arma::mat& y,
                      const int& p,
                      const std::string& model = "nc",
                      const bool& omit_y_lag = false) {
-
+  
   // output matrix
   arma::mat X;
   // vector of time indices
   arma::vec time = seq_cpp(1, y.n_cols);
   // compute first lag of the input series
   arma::mat ylag = y.cols(0, y.n_cols-2).t();
-
+  
   if(p != 0) {
     // compute matrix of lags of the first differences of the input series
     arma::mat LFD = mdiff(y, p, true);
     // drop observations
     ylag.shed_rows(0, p-1);
-
+    
     // regression with constant
     if(model == "c") {
       arma::vec j(LFD.n_rows, fill::ones);
@@ -146,7 +146,7 @@ arma::mat DF_Reg_Mat(const arma::mat& y,
 arma::field<arma::mat> DF_Reg_field(const arma::mat& Y,
                                     const int& p,
                                     const std::string& model) {
-
+  
   // initialize output field (set #rows conditional on p)
   arma::field<arma::mat> F;
   if(p == 0) {
@@ -154,27 +154,27 @@ arma::field<arma::mat> DF_Reg_field(const arma::mat& Y,
   } else {
     F.set_size(3, 1);
   }
-
+  
   // transform data for regression
   arma::mat X = DF_Reg_Mat(Y, p, model);
   arma::mat y = mdiff(Y, 0, true);
   y = y.rows(p, y.n_rows - 1);
-
+  
   // OLS and computation of residuals and sigmahat^2
   int n = X.n_rows, k = X.n_cols;
   arma::colvec coef = arma::solve(X, y);
   arma::colvec resid = y - X * coef;
   arma::vec sig2 = arma::trans(resid)*resid / (n - k);
-
+  
   F(0, 0) = resid;
   F(1, 0) = sig2;
-
+  
   // p vector of estimated coefficients on lagged differences of input series
   if(p > 0) {
     arma::colvec betas = coef.rows(k - p , k-1);
     F(2, 0) = betas;
   }
-
+  
   return F;
 }
 
@@ -184,25 +184,25 @@ arma::field<arma::mat> DF_Reg_field(const arma::mat& Y,
 double S2_AR(const arma::mat& dat,
              const int& k,
              const std::string& model) {
-
+  
   arma::field<arma::mat> F = DF_Reg_field(dat, k, model);
-
+  
   // assign outputs from (A)DF regression
   arma::colvec res = F(0, 0);
   double sigmahat2 = arma::as_scalar(F(1, 0));
   // initialise vector for estimated coefficients on lagged differences
   arma::colvec betas;
-
+  
   double sum_betasq = 1.0;
-
+  
   if(k > 0) {
     betas = F(2, 0);
     double s = accu(betas);
     sum_betasq = (1 - s) * (1 - s);
   }
-
+  
   return sigmahat2 / sum_betasq;
-
+  
 }
 
 // fast function which computes *time series* (Augmented) Dickey-Fuller regressions and
@@ -211,23 +211,23 @@ double S2_AR(const arma::mat& dat,
 double DF_Reg(const arma::mat& Y,
               const int& p,
               const std::string& model) {
-
+  
   arma::mat X = DF_Reg_Mat(Y, p, model);
   int n = X.n_rows, k = X.n_cols;
-
+  
   arma::mat y = mdiff(Y, 0, true);
   y = y.rows(p, y.n_rows-1);
-
+  
   arma::colvec coef = arma::solve(X, y);
   arma::colvec resid = y - X * coef;
-
+  
   double sig2 = arma::as_scalar(arma::trans(resid) * resid / (n - k));
   arma::colvec stderrest = arma::sqrt(
     sig2 * arma::diagvec(arma::inv(arma::trans(X) * X))
   );
-
+  
   double tstats = coef(0) / stderrest(0) ;
-
+  
   return tstats;
 }
 
@@ -242,12 +242,12 @@ double DF_Reg(const arma::mat& Y,
 // [[Rcpp::export]]
 arma::field<arma::mat> OLSRes(const arma::vec& y,
                               const arma::mat& X) {
-
+  
   arma::field<arma::mat> F(1, 2);
-
+  
   arma::colvec coef = arma::solve(X, y);
   arma::mat resid = y - X * coef;
-
+  
   F(0,0) = coef;
   F(0,1) = resid;
   return F;
