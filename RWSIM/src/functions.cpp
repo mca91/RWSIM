@@ -252,3 +252,57 @@ arma::field<arma::mat> OLSRes(const arma::vec& y,
   F(0,1) = resid;
   return F;
 }
+
+// simple but fast function which runs an ARMA recursion on a vector of innovations
+// [[Rcpp::export]]
+arma::mat ARMA_sim(arma::vec ar_coefs, // vector of AR coefficients 
+                   arma::vec ma_coefs, // vector of MA coefficients
+                   arma::vec innovs // vector of innovations
+) {
+  
+  size_t n = innovs.n_elem; //number of observations
+  size_t p, q;  //AR and MA orders
+  
+  arma::vec one(1, fill::eye); // one in MA polynomial
+
+   if((ar_coefs.n_elem == 1) & (as_scalar(ar_coefs.row(0)) == 0)) {
+     p = 0;
+   } else {
+     p = ar_coefs.n_elem;
+   }
+
+   if((ma_coefs.n_elem == 1) & (as_scalar(ma_coefs.row(0)) == 0)) {
+     q = 0;
+     ma_coefs = one;
+   } else {
+     q = ma_coefs.n_elem;
+     ma_coefs = join_cols(one, ma_coefs); // add one to ma coefficients
+   }
+  
+  arma::vec e(n+q, fill::zeros); // for n innovations + q starting values in MA recursion
+  e(span(q, n+q-1)) = innovs; // combine n innovations and q (zero) starting value for MA recursion 
+   
+  arma::vec ma(n, fill::zeros); // for n realizations of MA process
+  arma::vec u(n+p, fill::zeros); // for n realizations of ARMA recursion + p starting values in AR recursion
+
+  arma::vec theta = reverse(ma_coefs); // assign coefficients in MA polynomial in reversed order
+  arma::vec phi = reverse(ar_coefs); // assign coefficients in AR polynomial in reversed order
+    
+    // run MA recursion
+    for(size_t t=0; t<n; t++) {
+      ma.row(t) = theta.t() * e(span(t, t+q));
+    }
+    
+    // run ARMA recursion
+    if(p != 0) {
+      for(size_t t=p; t<=n; t++) {
+        u.row(t) = phi.t() * u(span(t-p, t-1)) + ma.row(t-p);
+      }
+      u.shed_rows(0, p-1); // drop starting values
+      return u;
+    } else {
+      return ma;
+    }
+    
+}
+
