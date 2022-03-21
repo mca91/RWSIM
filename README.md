@@ -4,7 +4,7 @@ You can also `git clone` and then build and install locally by running the shell
 
 **Note to self:**
 
-I had some trouble getting this to run on Apple Silicon Mac with the homebrew version of R. For now it runs fine using gfortran as shipped with the CRAN binaries R. Edited Makevars accordingly (`file.edit("~/.R/Makevars")`):
+I had some trouble getting this to run on Apple Silicon Mac with the homebrew version of R. For now it runs fine using gfortran as shipped with the CRAN binaries for R. Edited Makevars accordingly (`file.edit("~/.R/Makevars")`):
 
 ```
 FLIBS   = -L/opt/R/arm64/gfortran/lib
