@@ -11,7 +11,7 @@ library(RWSIM)
 # AR(1): rho = .7
 ARMA_sim(
   ar = .7,              # coefficients in AR polynomial (vector)
-  ma_coefs = 0,        # coefficients in MA polynomial (vector)
+  ma_coefs = 0,         # coefficients in MA polynomial (vector)
   innovs = rnorm(100)   # innovations
  )
   
@@ -29,7 +29,7 @@ For processes with higher persistence we may want use some burn-in samples:
 # ARMA(1, 2): rho = .7, theta_1 = .3, theta_2 = .1
 ARMA_sim(
   ar = .7, 
-  ma_coefs = c(0.3, .1), 
+  ma_coefs = c(.3, .1), 
   innovs = rnorm(300)
 )[-c(1:150)]
 ```
@@ -39,9 +39,11 @@ Let's check using simulation.
 ```r
 library(tidyverse)
 
+set.seed(123)
+
 est <- map(1:1000,
     ~ tseries::arma(
-        x = ARMA_sim(ar = .7, ma_coefs = c(0.3, .1), innovs = rnorm(300))[-c(1:150)], 
+        x = ARMA_sim(ar = .7, ma_coefs = c(.3, .1), innovs = rnorm(300))[-c(1:150)], 
         order = c(1, 2), 
         include.intercept = F, 
       )$coef
@@ -50,6 +52,9 @@ est <- map(1:1000,
 est %>% 
   reduce(rbind) %>% 
   colMeans()
+  
+#      ar1       ma1       ma2 
+# 0.6836856 0.3117469 0.1090300  
 ```
 
 **Note to self:**
