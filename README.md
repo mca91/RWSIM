@@ -73,7 +73,7 @@ S2_AR(
 )
 ```
 
-We may use a subset of these `k` differences by suppliying an index vector for the lags to be excluded to `remove_lags`:
+We may use a subset of these `k` differences by supplying an index vector for the lags to be excluded to `remove_lags`:
 
 ```r
 S2_AR(
