@@ -18,7 +18,7 @@ ARMA_sim(
 # MA(2): theta_1 = .2, theta_2 = .1
 ARMA_sim(
   ar = 0,              
-  ma_coefs = (.2, .1),        
+  ma_coefs = c(.2, .1),        
   innovs = rnorm(100)   
  )
 ```
