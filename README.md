@@ -2,6 +2,8 @@ Install using `devtools::install_github("https://github.com/mca91/RWSIM/", subdi
 
 You can also `git clone` and then build and install locally by running the shell script `buildpackage.sh`.
 
+<br>
+
 ### Example for `ARMA_sim()`:
 
 ```r
@@ -55,6 +57,8 @@ est %>%
 #      ar1       ma1       ma2 
 # 0.6836856 0.3117469 0.1090300  
 ```
+
+<br>
 
 ### Example for `S2_ar`:
 
