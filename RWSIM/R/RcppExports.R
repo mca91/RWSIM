@@ -17,16 +17,16 @@ DF_Reg_Mat <- function(y, p, model = "nc", omit_y_lag = FALSE) {
     .Call(`_RWSIM_DF_Reg_Mat`, y, p, model, omit_y_lag)
 }
 
-DF_Reg_field <- function(Y, p, model) {
-    .Call(`_RWSIM_DF_Reg_field`, Y, p, model)
+DF_Reg_field <- function(Y, p, model, remove_lags) {
+    .Call(`_RWSIM_DF_Reg_field`, Y, p, model, remove_lags)
 }
 
-S2_AR <- function(dat, k, model) {
-    .Call(`_RWSIM_S2_AR`, dat, k, model)
+S2_AR <- function(dat, k, model, remove_lags) {
+    .Call(`_RWSIM_S2_AR`, dat, k, model, remove_lags)
 }
 
-DF_Reg <- function(Y, p, model) {
-    .Call(`_RWSIM_DF_Reg`, Y, p, model)
+DF_Reg <- function(Y, p, model, remove_lags) {
+    .Call(`_RWSIM_DF_Reg`, Y, p, model, remove_lags)
 }
 
 OLSRes <- function(y, X) {

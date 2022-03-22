@@ -143,9 +143,12 @@ arma::mat DF_Reg_Mat(const arma::mat& y,
 // returns a field object with residuals, estimated coefficients on lagged differences
 // and sigmahat^2
 // [[Rcpp::export]]
-arma::field<arma::mat> DF_Reg_field(const arma::mat& Y,
-                                    const int& p,
-                                    const std::string& model) {
+arma::field<arma::mat> DF_Reg_field(
+    const arma::mat& Y,
+    const int& p,
+    const std::string& model,
+    const arma::uvec& remove_lags         // cherry-pick your lags
+  ) {
 
   // initialize output field (set #rows conditional on p)
   arma::field<arma::mat> F;
@@ -157,6 +160,11 @@ arma::field<arma::mat> DF_Reg_field(const arma::mat& Y,
 
   // transform data for regression
   arma::mat X = DF_Reg_Mat(Y, p, model);
+
+  int nz = accu(remove_lags != 0);
+  if(nz != 0) X.shed_cols(remove_lags);
+
+
   arma::mat y = mdiff(Y, 0, true);
   y = y.rows(p, y.n_rows - 1);
 
@@ -169,9 +177,9 @@ arma::field<arma::mat> DF_Reg_field(const arma::mat& Y,
   F(0, 0) = resid;
   F(1, 0) = sig2;
 
-  // p vector of estimated coefficients on lagged differences of input series
+  // p vector of estimated coefficients on _lagged differences_ of input series
   if(p > 0) {
-    arma::colvec betas = coef.rows(k - p , k-1);
+    arma::colvec betas = coef.rows(1, p - nz);
     F(2, 0) = betas;
   }
 
@@ -181,11 +189,14 @@ arma::field<arma::mat> DF_Reg_field(const arma::mat& Y,
 // function which computes the AR estimate of the spectral density at frequency zero
 // for a time series of AR(k) residuals
 // [[Rcpp::export]]
-double S2_AR(const arma::mat& dat,
-             const int& k,
-             const std::string& model) {
+double S2_AR(
+    const arma::mat& dat,
+    const int& k,
+    const std::string& model,
+    const arma::uvec& remove_lags         // cherry-pick your lags
+  ) {
 
-  arma::field<arma::mat> F = DF_Reg_field(dat, k, model);
+  arma::field<arma::mat> F = DF_Reg_field(dat, k, model, remove_lags);
 
   // assign outputs from (A)DF regression
   arma::colvec res = F(0, 0);
@@ -208,11 +219,16 @@ double S2_AR(const arma::mat& dat,
 // fast function which computes *time series* (Augmented) Dickey-Fuller regressions and
 // returns t-ratio on the coefficient of y_t-1
 // [[Rcpp::export]]
-double DF_Reg(const arma::mat& Y,
-              const int& p,
-              const std::string& model) {
+double DF_Reg(
+    const arma::mat& Y,                   // time series
+    const int& p,                         // maximum lag order
+    const std::string& model,             // deterministic component
+    const arma::uvec& remove_lags    // cherry-pick your lags
+  ) {
 
   arma::mat X = DF_Reg_Mat(Y, p, model);
+  if(accu(remove_lags) != 0) X.shed_cols(remove_lags);
+
   int n = X.n_rows, k = X.n_cols;
 
   arma::mat y = mdiff(Y, 0, true);
@@ -299,9 +315,9 @@ arma::mat ARMA_sim(arma::vec ar_coefs, // vector of AR coefficients
         u.row(t) = phi.t() * u(span(t-p, t-1)) + ma.row(t-p);
       }
       u.shed_rows(0, p-1); // drop starting values
-      return u;
+      return std::move(u);
     } else {
-      return ma;
+      return std::move(ma);
     }
 
 }
