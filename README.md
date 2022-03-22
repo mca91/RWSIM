@@ -4,9 +4,8 @@ You can also `git clone` and then build and install locally by running the shell
 
 Example for `ARMA_sim()`:
 
-```
 
-```
+```r
 library(RWSIM)
 
 # AR(1): rho = .7
