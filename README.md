@@ -2,7 +2,7 @@ Install using `devtools::install_github("https://github.com/mca91/RWSIM/", subdi
 
 You can also `git clone` and then build and install locally by running the shell script `buildpackage.sh`.
 
-## Example for `ARMA_sim()`:
+### Example for `ARMA_sim()`:
 
 ```r
 library(RWSIM)
@@ -56,7 +56,7 @@ est %>%
 # 0.6836856 0.3117469 0.1090300  
 ```
 
-## Example for `S2_ar`:
+### Example for `S2_ar`:
 
 In the exaple below we compute the long-run variance using an estimate of the spectral density at frequency zero. `S2_AR()` will include the first `k` lagged differences of `dat` in the auxiliary regression.
 
