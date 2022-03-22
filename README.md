@@ -25,7 +25,7 @@ ARMA_sim(
 
 For processes with higher persistence we may want use some burn-in samples:
 
-```
+```r
 # ARMA(1, 2): rho = .7, theta_1 = .3, theta_2 = .1
 ARMA_sim(
   ar = .7, 
@@ -36,7 +36,7 @@ ARMA_sim(
 
 Let's check using simulation.
 
-```
+```r
 library(tidyverse)
 
 est <- map(1:1000,
