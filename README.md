@@ -11,7 +11,7 @@ library(RWSIM)
 # AR(1): rho = .7
 ARMA_sim(
   ar = .7,              # coefficients in AR polynomial (vector)
-  ma_coefs = 0),        # coefficients in MA polynomial (vector)
+  ma_coefs = 0,        # coefficients in MA polynomial (vector)
   innovs = rnorm(100)   # innovations
  )
   
