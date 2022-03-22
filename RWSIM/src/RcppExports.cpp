@@ -114,6 +114,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// ARMA_sim
+arma::mat ARMA_sim(arma::vec ar_coefs, arma::vec ma_coefs, arma::vec innovs);
+RcppExport SEXP _RWSIM_ARMA_sim(SEXP ar_coefsSEXP, SEXP ma_coefsSEXP, SEXP innovsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type ar_coefs(ar_coefsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type ma_coefs(ma_coefsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type innovs(innovsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ARMA_sim(ar_coefs, ma_coefs, innovs));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_seq_cpp", (DL_FUNC) &_RWSIM_seq_cpp, 2},
@@ -124,6 +137,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_S2_AR", (DL_FUNC) &_RWSIM_S2_AR, 3},
     {"_RWSIM_DF_Reg", (DL_FUNC) &_RWSIM_DF_Reg, 3},
     {"_RWSIM_OLSRes", (DL_FUNC) &_RWSIM_OLSRes, 2},
+    {"_RWSIM_ARMA_sim", (DL_FUNC) &_RWSIM_ARMA_sim, 3},
     {NULL, NULL, 0}
 };
 
