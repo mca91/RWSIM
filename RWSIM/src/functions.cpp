@@ -296,7 +296,7 @@ arma::mat ARMA_sim(arma::vec ar_coefs, // vector of AR coefficients
    }
 
   arma::vec e(n+q, fill::zeros); // for n innovations + q starting values in MA recursion
-  e(span(q, n+q-1)) = innovs; // combine n innovations and q (zero) starting value for MA recursion
+  e(span(q, n+q-1)) = innovs; // combine n innovations and q zero starting value for MA recursion
 
   arma::vec ma(n, fill::zeros); // for n realizations of MA process
   arma::vec u(n+p, fill::zeros); // for n realizations of ARMA recursion + p starting values in AR recursion
@@ -311,7 +311,7 @@ arma::mat ARMA_sim(arma::vec ar_coefs, // vector of AR coefficients
 
     // run ARMA recursion
     if(p != 0) {
-      for(size_t t=p; t<=n; t++) {
+      for(size_t t=p; t<n+p; t++) {
         u.row(t) = phi.t() * u(span(t-p, t-1)) + ma.row(t-p);
       }
       u.shed_rows(0, p-1); // drop starting values
