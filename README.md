@@ -89,7 +89,7 @@ S2_AR(
 I had some trouble getting this to run on Apple Silicon Mac with the homebrew version of R. For now it runs fine using gfortran as shipped with the CRAN binaries for R. Edited Makevars accordingly (`file.edit("~/.R/Makevars")`):
 
 ```
-FLIBS   = -L/opt/R/arm64/gfortran/lib
+FLIBS   = -L/opt/R/arm64/gfortran/lib -mtune=native
 F77     = /opt/R/arm64/gfortran/bin/gfortran
 FC      = /opt/R/arm64/gfortran/bin/gfortran
 ```
