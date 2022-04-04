@@ -24,7 +24,7 @@ DF_Reg(y, p = 10, model = "c", remove_lags = 0)
 
 ### Example for `DF_Reg_field()`
 
-Like `DF_reg()` and thus also the same call signature but different output:
+Same call signature like `DF_reg()` but different output:
 
 **3x1 array**
 
