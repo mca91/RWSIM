@@ -43,7 +43,7 @@ bench::mark(
   <bch:expr>                                      <dbl>  <dbl>     <dbl>     <dbl>    
 1 urca                                             54.5   56.1       1        65.0 
 2 DF_Reg(y, model = "c", p = 10, remove_lags = 0)   1      1        56.8       1 
-
+```
 
 
 <br>
