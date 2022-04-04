@@ -22,6 +22,30 @@ DF_Reg(y, p = 10, model = "c", remove_lags = 0)
 [1] -2.525997
 ```
 
+Which is equivalent to what `urca::ur.df()` yields
+
+```r
+urca::ur.df(t(y), type = "drift", lags = 10)
+```
+
+but we are ~ 60 times faster and more memory efficient :-)
+
+```r
+bench::mark(
+    urca = urca::ur.df(t(y), type = "drift", lags = 10),
+    DF_Reg(y, model = "c", p = 10, remove_lags = 0),
+    check = F, relative = T
+)
+```
+
+```
+  expression                                        min median `itr/sec` mem_alloc 
+  <bch:expr>                                      <dbl>  <dbl>     <dbl>     <dbl>    
+1 urca                                             54.5   56.1       1        65.0 
+2 DF_Reg(y, model = "c", p = 10, remove_lags = 0)   1      1        56.8       1 
+
+
+
 <br>
 
 ### Example for `DF_Reg_field()`
