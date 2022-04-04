@@ -22,6 +22,8 @@ DF_Reg(y, p = 10, model = "c", remove_lags = 0)
 [1] -2.525997
 ```
 
+<br>
+
 ### Example for `DF_Reg_field()`
 
 Same call signature like `DF_reg()` but different output:
@@ -86,6 +88,8 @@ DF_Reg_field(y, p = 10, model = "c", remove_lags = c(2, 4, 6, 8))[[3]]
 [6,] -0.12236955
 ```
 
+<br>
+
 ### Example for `ARMA_sim()`:
 
 ```r
@@ -135,7 +139,7 @@ est %>%
   colMeans()
 ```
 
-
+```
 #      ar1       ma1       ma2 
 # 0.6836856 0.3117469 0.1090300  
 ```
