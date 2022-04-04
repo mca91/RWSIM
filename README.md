@@ -211,3 +211,11 @@ FLIBS   = -L/opt/R/arm64/gfortran/lib -mtune=native
 F77     = /opt/R/arm64/gfortran/bin/gfortran
 FC      = /opt/R/arm64/gfortran/bin/gfortran
 ```
+
+---
+
+```r
+dir.create("~/.R/")
+file.create("~/.R/Makevars")
+file.edit("~/.R/Makevars"
+```
