@@ -28,6 +28,14 @@ Which is equivalent to what `urca::ur.df()` yields
 urca::ur.df(t(y), type = "drift", lags = 10)
 ```
 
+```
+############################################################### 
+# Augmented Dickey-Fuller Test Unit Root / Cointegration Test # 
+############################################################### 
+
+The value of the test statistic is: -2.526 3.2035 
+```
+
 but we are ~ 60 times faster and more memory efficient :-)
 
 ```r
