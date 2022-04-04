@@ -6,7 +6,7 @@ You can also `git clone` and then build and install locally by running the shell
 
 ### Example for `DF_reg()`:
 
-Run (Augmented) Dickey-Fuller regression and obtain t-statistic for H_0: \rho = 0 (the coefficient on y_{t-1}). 
+Run (augmented) Dickey-Fuller regression and obtain t-statistic for H_0: \rho = 0 (the coefficient on y_{t-1}). 
 
 Note that I've added the option to drop lags in `1:p` (where `p` is the maximum lag) using the `remove_lags` argument which has no default so you need to set `remove_lags = 0` for all lags to be included.
 
