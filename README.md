@@ -16,6 +16,7 @@ library(RWSIM)
 set.seed(123)
 y <- t(rnorm(100))
 DF_Reg(y, p = 10, model = "c", remove_lags = 0)
+```
 
 ```
 [1] -2.525997
