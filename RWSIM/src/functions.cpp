@@ -223,7 +223,7 @@ double DF_Reg(
     const arma::mat& Y,                   // time series
     const int& p,                         // maximum lag order
     const std::string& model,             // deterministic component
-    const arma::uvec& remove_lags    // cherry-pick your lags
+    const arma::uvec& remove_lags         // cherry-pick your lags
   ) {
 
   arma::mat X = DF_Reg_Mat(Y, p, model);
@@ -248,7 +248,7 @@ double DF_Reg(
 }
 
 
-// a fast OLS function which returns a arma::field object.
+// a fast OLS function which returns an arma::field object.
 //
 // First entry is a column vector of k(+1) estimated coefficients
 // Second entry is a N x 1 residual matrix
