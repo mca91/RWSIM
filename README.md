@@ -50,7 +50,7 @@ DF
 [3,] numeric,10
 ```
 
-You may use `list` subsetting to extract entries:
+You may use `list` subsetting to extract entries. Let's get coefficients on lags of the regressand:
 
 ```r
 DF[[3]]
