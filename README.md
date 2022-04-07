@@ -64,9 +64,11 @@ Same call signature like `DF_reg()` but different output:
 
 ```
      [,1]      
-[1,] residuals from ADF regression         n-p-1 x 1 matrix
-[2,] estimate for coefficient rho          1 x 1     matrix
-[3,] coefficients on the \Delta y_{t-j}    p x 1     matrix
+[1,] residuals from ADF regression                      n-p-1 x 1  matrix
+[2,] estimate for coefficient rho                       1 x 1      matrix
+[3,] coefficient estimates on the \Delta y_{t-j}        p x 1      matrix
+[4,] coefficient estimates on deterministics            d x 1      matrix
+[5,] first differences of dependent variable            n-p-1 x 1  matrix
 ```
 
 ```r
@@ -77,11 +79,13 @@ DF <- DF_Reg_field(y, p = 10, model = "c", remove_lags = 0)
 DF
 ```
 
-```
+
      [,1]      
-[1,] numeric,89 
+[1,] numeric,89
 [2,] 0.8720768 
 [3,] numeric,10
+[4,] 0.08116683
+[5,] numeric,89
 ```
 
 You may use `list` subsetting to extract entries. Let's get coefficients on lags of the regressand:
