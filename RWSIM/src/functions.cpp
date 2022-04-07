@@ -150,13 +150,10 @@ arma::field<arma::mat> DF_Reg_field(
     const arma::uvec& remove_lags         // cherry-pick your lags
   ) {
 
-  // initialize output field (set #rows conditional on p)
+  // initialize output field
   arma::field<arma::mat> F;
-  if(p == 0) {
-    F.set_size(2, 1);
-  } else {
-    F.set_size(3, 1);
-  }
+  F.set_size(5, 1);
+
 
   // transform data for regression
   arma::mat X = DF_Reg_Mat(Y, p, model);
@@ -173,15 +170,15 @@ arma::field<arma::mat> DF_Reg_field(
   arma::colvec coef = arma::solve(X, y);
   arma::colvec resid = y - X * coef;
   arma::vec sig2 = arma::trans(resid)*resid / (n - k);
+  arma::colvec betas = coef.rows(1, p - nz);
 
   F(0, 0) = resid;
   F(1, 0) = sig2;
-
-  // p vector of estimated coefficients on _lagged differences_ of input series
-  if(p > 0) {
-    arma::colvec betas = coef.rows(1, p - nz);
-    F(2, 0) = betas;
+  F(2, 0) = betas;
+  if(model != "nc") {
+    F(3, 0) = coef.rows(p + 1, coef.n_rows - 1);
   }
+  F(4, 0) = y;
 
   return F;
 }
