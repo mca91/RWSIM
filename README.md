@@ -79,7 +79,7 @@ DF <- DF_Reg_field(y, p = 10, model = "c", remove_lags = 0)
 DF
 ```
 
-
+```
      [,1]      
 [1,] numeric,89
 [2,] 0.8720768 
