@@ -60,7 +60,7 @@ bench::mark(
 
 Same call signature like `DF_reg()` but different output:
 
-**3x1 array**
+**5x1 array**
 
 ```
      [,1]      
