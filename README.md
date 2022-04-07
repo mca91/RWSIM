@@ -71,6 +71,8 @@ Same call signature like `DF_reg()` but different output:
 [5,] first differences of dependent variable            n-p-1 x 1  matrix
 ```
 
+NB: for `model = "nc"` `DF_Reg_field(...)[[4]]` will return an empty (0 x 0) matrix due to way the field is initialised by Armadillo / translated to R.
+
 ```r
 set.seed(123)
 y <- t(rnorm(100))
