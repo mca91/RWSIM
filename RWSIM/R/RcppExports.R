@@ -33,7 +33,7 @@ OLSRes <- function(y, X) {
     .Call(`_RWSIM_OLSRes`, y, X)
 }
 
-ARMA_sim <- function(ar_coefs, ma_coefs, innovs) {
-    .Call(`_RWSIM_ARMA_sim`, ar_coefs, ma_coefs, innovs)
+ARMA_sim <- function(ar_coefs, ma_coefs, innovs, rho = 1.0) {
+    .Call(`_RWSIM_ARMA_sim`, ar_coefs, ma_coefs, innovs, rho)
 }
 
