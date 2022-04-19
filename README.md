@@ -218,6 +218,7 @@ purrr::map_dfr(
 ```
 #   z.lag.1  z.diff.lag1 z.diff.lag2 z.diff.lag3 
 # -0.2010864   0.3930918   0.2897235   0.1983707 
+```
 
 <br>
 
