@@ -268,9 +268,11 @@ arma::field<arma::mat> OLSRes(const arma::vec& y,
 
 // simple but fast function which runs an ARMA recursion on a vector of innovations
 // [[Rcpp::export]]
-arma::mat ARMA_sim(arma::vec ar_coefs, // vector of AR coefficients
-                   arma::vec ma_coefs, // vector of MA coefficients
-                   arma::vec innovs // vector of innovations
+arma::mat ARMA_sim(
+    arma::vec ar_coefs, // vector of AR coefficients
+    arma::vec ma_coefs, // vector of MA coefficients
+    const arma::vec& innovs, // vector of innovations
+    const double& rho = 1.0  // rho != 1.0 for ADF-regression-type GDP
 ) {
 
   size_t n = innovs.n_elem; //number of observations
@@ -293,7 +295,7 @@ arma::mat ARMA_sim(arma::vec ar_coefs, // vector of AR coefficients
    }
 
   arma::vec e(n+q, fill::zeros); // for n innovations + q starting values in MA recursion
-  e(span(q, n+q-1)) = innovs; // combine n innovations and q zero starting value for MA recursion
+  e(span(q, n+q-1)) = innovs; // join n innovations and q zero starting value for MA recursion
 
   arma::vec ma(n, fill::zeros); // for n realizations of MA process
   arma::vec u(n+p, fill::zeros); // for n realizations of ARMA recursion + p starting values in AR recursion
@@ -306,12 +308,15 @@ arma::mat ARMA_sim(arma::vec ar_coefs, // vector of AR coefficients
       ma.row(t) = theta.t() * e(span(t, t+q));
     }
 
-    // run ARMA recursion
+    // run ARMA recursion, return (cumsum of) series
     if(p != 0) {
       for(size_t t=p; t<n+p; t++) {
-        u.row(t) = phi.t() * u(span(t-p, t-1)) + ma.row(t-p);
+        u.row(t) = (rho - 1.0) * accu(u) + phi.t() * u(span(t-p, t-1)) + ma.row(t-p);
       }
-      u.shed_rows(0, p-1); // drop starting values
+      if(rho != 1.0) {
+        u = arma::cumsum(u);
+      }
+      u.shed_rows(0, p-1); // drop the p starting values in AR(MA) output vector
       return std::move(u);
     } else {
       return std::move(ma);
