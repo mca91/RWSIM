@@ -269,10 +269,11 @@ arma::field<arma::mat> OLSRes(const arma::vec& y,
 // simple but fast function which runs an ARMA recursion on a vector of innovations
 // [[Rcpp::export]]
 arma::mat ARMA_sim(
-    arma::vec ar_coefs, // vector of AR coefficients
-    arma::vec ma_coefs, // vector of MA coefficients
-    const arma::vec& innovs, // vector of innovations
-    const double& rho = 1.0  // rho != 1.0 for ADF-regression-type GDP
+    arma::vec ar_coefs,           // vector of AR coefficients
+    arma::vec ma_coefs,           // vector of MA coefficients
+    const arma::vec& innovs,      // vector of innovations
+    const bool& cumsum = false,   // should cumsum of series be returned?
+    const double& rho = 1         // for ADF-regression-type GDP
 ) {
 
   size_t n = innovs.n_elem; //number of observations
@@ -313,7 +314,7 @@ arma::mat ARMA_sim(
       for(size_t t=p; t<n+p; t++) {
         u.row(t) = (rho - 1.0) * accu(u) + phi.t() * u(span(t-p, t-1)) + ma.row(t-p);
       }
-      if(rho != 1.0) {
+      if(cumsum) {
         u = arma::cumsum(u);
       }
       u.shed_rows(0, p-1); // drop the p starting values in AR(MA) output vector
