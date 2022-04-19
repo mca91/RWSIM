@@ -182,6 +182,13 @@ est %>%
 # 0.6836856 0.3117469 0.1090300  
 ```
 
+#### Update 17.04.22
+
+`ARMA_sim()` now supports simulating from ADF regression GDPs via the additional argument `rho`. If rho != 1, the outcome will b
+
+<img src="https://render.githubusercontent.com/render/math?math={\L = -\sum_{j}[T_{j}ln(O_{j})] + \frac{\lambda W_{ij}^{2}}{2} \rightarrow \text{one-hot} \rightarrow -ln(O_{c}) + \frac{\lambda W_{ij}^{2}}{2}}#gh-light-mode-only">
+<img src="https://render.githubusercontent.com/render/math?math={\color{white}\L = -\sum_{j}[T_{j}ln(O_{j})] + \frac{\lambda W_{ij}^{2}}{2} \rightarrow \text{one-hot} \rightarrow -ln(O_{c}) + \frac{\lambda W_{ij}^{2}}{2}}#gh-dark-mode-only">
+
 <br>
 
 ### Example for `S2_ar`:
