@@ -24,7 +24,7 @@ DF_Reg(y, p = 10, model = "c", remove_lags = 0)
 [1] -2.525997
 ```
 
-Which is equivalent to what `urca::ur.df()` yields
+This is equivalent to what `urca::ur.df()` yields
 
 ```r
 urca::ur.df(t(y), type = "drift", lags = 10)
@@ -38,7 +38,7 @@ urca::ur.df(t(y), type = "drift", lags = 10)
 The value of the test statistic is: -2.526 3.2035 
 ```
 
-but we are ~ 60 times faster and more memory efficient :-)
+(the first value is the DF t-ratio for RW with drift, the second one is the test statistic for the joint hypothesis of an RW model _without_ drift) but we are ~ 60 times faster and more memory efficient :-).
 
 ```r
 bench::mark(
