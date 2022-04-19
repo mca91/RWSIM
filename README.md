@@ -186,8 +186,8 @@ est %>%
 
 `ARMA_sim()` now supports simulating from ADF regression GDPs via the additional argument `rho`. If rho != 1, the outcome will be the cumsum of 
 
-<img src="https://render.githubusercontent.com/render/math?math={\Delta y_t = (\rho - 1) \cdot y_{t-1} + sum_{j=1}^p \gamma_j \Delta y_{t-j} + e_i}#gh-light-mode-only">
-<img src="https://render.githubusercontent.com/render/math?math={\color{white}y_t = (\rho - 1) \cdot y_{t-1} + sum_{j=1}^p \gamma_j \Delta y_{t-j} + e_i}#gh-dark-mode-only">
+<img src="https://render.githubusercontent.com/render/math?math={\Delta y_t = (\rho - 1) \cdot y_{t-1} + \sum_{j=1}^p \gamma_j \Delta y_{t-j} + e_i}#gh-light-mode-only">
+<img src="https://render.githubusercontent.com/render/math?math={\color{white}y_t = (\rho - 1) \cdot y_{t-1} + \sum_{j=1}^p \gamma_j \Delta y_{t-j} + e_i}#gh-dark-mode-only">
 
 <br>
 
