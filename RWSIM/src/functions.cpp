@@ -154,29 +154,45 @@ arma::field<arma::mat> DF_Reg_field(
   arma::field<arma::mat> F;
   F.set_size(5, 1);
 
+  //initialise pmax
+  int pmax = p;
 
-  // transform data for regression
-  arma::mat X = DF_Reg_Mat(Y, p, model);
+  // // how many lags need to be excluded?
+   int nz = accu(remove_lags != 0);
+  // // initialise "full" lags vector
+   arma::vec lags = seq_cpp(1, pmax);
+  // // modify accordingly
+   if(nz != 0) lags.shed_rows(remove_lags - 1);
+  // // modify "pmax" if lags are removed
+   pmax = lags.max();
 
-  int nz = accu(remove_lags != 0);
-  if(nz != 0) X.shed_cols(remove_lags);
+   arma::uvec tbr = find(remove_lags < pmax);
+
+
+  // obtain ADF regression matrix
+  arma::mat X = DF_Reg_Mat(Y, pmax, model);
+
+  if(nz != 0) X.shed_cols(remove_lags.rows(tbr));
 
 
   arma::mat y = mdiff(Y, 0, true);
   y = y.rows(p, y.n_rows - 1);
 
-  // OLS and computation of residuals and sigmahat^2
-  int n = X.n_rows, k = X.n_cols;
+  // OLS, computation of residuals
   arma::colvec coef = arma::solve(X, y);
   arma::colvec resid = y - X * coef;
-  arma::vec sig2 = arma::trans(resid)*resid / (n - k);
-  arma::colvec betas = coef.rows(1, p - nz);
+
+  //int n = X.n_rows, k = X.n_cols;
+  //arma::vec sig2 = arma::trans(resid)*resid / (n - k);
+
+  arma::colvec betas;
+  if(p != 0) betas = coef.rows(1, p - nz);
 
   F(0, 0) = resid;
-  F(1, 0) = sig2;
+  F(1, 0) = coef.row(0);
   F(2, 0) = betas;
   if(model != "nc") {
-    F(3, 0) = coef.rows(p + 1, coef.n_rows - 1);
+    F(3, 0) = coef.rows(pmax + 1 - nz, coef.n_rows - 1);
   }
   F(4, 0) = y;
 
@@ -188,7 +204,7 @@ arma::field<arma::mat> DF_Reg_field(
 // [[Rcpp::export]]
 double S2_AR(
     const arma::mat& dat,
-    const int& k,
+    const int& k,                         // maximum lag order (after removing lags!)
     const std::string& model,
     const arma::uvec& remove_lags         // cherry-pick your lags
   ) {
@@ -197,7 +213,15 @@ double S2_AR(
 
   // assign outputs from (A)DF regression
   arma::colvec res = F(0, 0);
-  double sigmahat2 = arma::as_scalar(F(1, 0));
+
+
+  int n = dat.n_cols;
+  double sigmahat2 =  arma::as_scalar(
+    // (w)
+    arma::trans(res)*res / (n - F(2,0).n_rows)
+    );
+
+  //double sigmahat2 = arma::as_scalar(F(1, 0));
   // initialise vector for estimated coefficients on lagged differences
   arma::colvec betas;
 
@@ -218,7 +242,7 @@ double S2_AR(
 // [[Rcpp::export]]
 double DF_Reg(
     const arma::mat& Y,                   // time series
-    const int& p,                         // maximum lag order
+    const int& p,                         // maximum lag order (after removing lags!)
     const std::string& model,             // deterministic component
     const arma::uvec& remove_lags         // cherry-pick your lags
   ) {
@@ -324,4 +348,23 @@ arma::mat ARMA_sim(
     }
 
 }
+
+
+// [[Rcpp::export]]
+arma::uvec test(int p, const arma::uvec& remove_lags) {
+
+  arma::vec lags = seq_cpp(1, p);
+  lags.shed_rows(remove_lags-1);
+  int pmax = lags.max();
+
+  uvec tbr = find(remove_lags < pmax);
+
+  return remove_lags.rows(tbr);
+
+}
+
+
+
+
+
 

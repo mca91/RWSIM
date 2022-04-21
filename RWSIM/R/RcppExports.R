@@ -37,3 +37,7 @@ ARMA_sim <- function(ar_coefs, ma_coefs, innovs, cumsum = FALSE, rho = 1) {
     .Call(`_RWSIM_ARMA_sim`, ar_coefs, ma_coefs, innovs, cumsum, rho)
 }
 
+test <- function(p, remove_lags) {
+    .Call(`_RWSIM_test`, p, remove_lags)
+}
+
