@@ -344,7 +344,11 @@ arma::mat ARMA_sim(
       u.shed_rows(0, p-1); // drop the p starting values in AR(MA) output vector
       return std::move(u);
     } else {
-      return std::move(ma);
+      if(cumsum) {
+        return arma::cumsum(ma);
+      } else {
+        return std::move(ma);
+      }
     }
 
 }
@@ -361,6 +365,32 @@ arma::uvec test(int p, const arma::uvec& remove_lags) {
 
   return remove_lags.rows(tbr);
 
+}
+
+// function which comutes BIC for an ADF model
+// [[Rcpp::export]]
+double BIC(const arma::mat& Y,
+           const int& p,
+           const std::string& model,
+           const arma::uvec& remove_lags) {
+
+  // time series length
+  size_t T = Y.n_elem;
+  // do the regression stuff
+  arma::field<arma::mat> reg_results = DF_Reg_field(Y, p, model, remove_lags);
+  // obtain residuals
+  arma::mat e = reg_results(0, 0);
+
+  // number of estimated coefficients in DF regression
+  double k = reg_results(2, 0).n_elem + reg_results(3, 0).n_elem + 1.0;
+
+  // estimate sigma
+  double hat_sigma_sq = dot(e, e) / (T - k - 1);
+
+  // compute Bic
+  double BIC = T * log(hat_sigma_sq) + k * log(T);
+
+  return BIC;
 }
 
 

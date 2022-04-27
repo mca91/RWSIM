@@ -41,3 +41,7 @@ test <- function(p, remove_lags) {
     .Call(`_RWSIM_test`, p, remove_lags)
 }
 
+BIC <- function(Y, p, model, remove_lags) {
+    .Call(`_RWSIM_BIC`, Y, p, model, remove_lags)
+}
+

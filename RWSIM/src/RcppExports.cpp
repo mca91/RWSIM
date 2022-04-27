@@ -144,6 +144,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// BIC
+double BIC(const arma::mat& Y, const int& p, const std::string& model, const arma::uvec& remove_lags);
+RcppExport SEXP _RWSIM_BIC(SEXP YSEXP, SEXP pSEXP, SEXP modelSEXP, SEXP remove_lagsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const int& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type remove_lags(remove_lagsSEXP);
+    rcpp_result_gen = Rcpp::wrap(BIC(Y, p, model, remove_lags));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_seq_cpp", (DL_FUNC) &_RWSIM_seq_cpp, 2},
@@ -156,6 +170,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_OLSRes", (DL_FUNC) &_RWSIM_OLSRes, 2},
     {"_RWSIM_ARMA_sim", (DL_FUNC) &_RWSIM_ARMA_sim, 5},
     {"_RWSIM_test", (DL_FUNC) &_RWSIM_test, 2},
+    {"_RWSIM_BIC", (DL_FUNC) &_RWSIM_BIC, 4},
     {NULL, NULL, 0}
 };
 
