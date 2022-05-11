@@ -45,3 +45,7 @@ BIC <- function(Y, p, model, remove_lags) {
     .Call(`_RWSIM_BIC`, Y, p, model, remove_lags)
 }
 
+GLS_Detrend <- function(dat, model) {
+    .Call(`_RWSIM_GLS_Detrend`, dat, model)
+}
+

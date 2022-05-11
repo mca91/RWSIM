@@ -147,44 +147,47 @@ arma::field<arma::mat> DF_Reg_field(
     const arma::mat& Y,
     const int& p,
     const std::string& model,
-    const arma::uvec& remove_lags         // cherry-pick your lags
+    const arma::uvec& remove_lags // cherry-pick your lags
   ) {
 
   // initialize output field
   arma::field<arma::mat> F;
   F.set_size(5, 1);
 
-  //initialise pmax
-  int pmax = p;
+  //initialise pmax, nz
+  int pmax = p, nz = 0;
 
-  // // how many lags need to be excluded?
-   int nz = accu(remove_lags != 0);
-  // // initialise "full" lags vector
-   arma::vec lags = seq_cpp(1, pmax);
-  // // modify accordingly
-   if(nz != 0) lags.shed_rows(remove_lags - 1);
-  // // modify "pmax" if lags are removed
-   pmax = lags.max();
+  // initialise uvec of lags to be removed
+  arma::uvec tbr;
 
-   arma::uvec tbr = find(remove_lags < pmax);
-
+  if(pmax != 0) {
+    // _how many_ lags need to be excluded?
+    nz = accu(remove_lags != 0);
+    // initialise the "full" lags vector
+    arma::vec lags = seq_cpp(1, pmax);
+    // modify the full lags vector accordingly
+    if(nz != 0) lags.shed_rows(remove_lags - 1);
+    // modify "pmax" if lags are removed
+    pmax = lags.max();
+    // lags to be removed
+    tbr = find(remove_lags < pmax);
+  }
 
   // obtain ADF regression matrix
   arma::mat X = DF_Reg_Mat(Y, pmax, model);
 
+  // remove lags from the ADF regression matrix
   if(nz != 0) X.shed_cols(remove_lags.rows(tbr));
 
-
+  // obtain dependent variable for ADF regression
   arma::mat y = mdiff(Y, 0, true);
   y = y.rows(p, y.n_rows - 1);
 
-  // OLS, computation of residuals
+  // run OLS, compute residuals
   arma::colvec coef = arma::solve(X, y);
   arma::colvec resid = y - X * coef;
 
-  //int n = X.n_rows, k = X.n_cols;
-  //arma::vec sig2 = arma::trans(resid)*resid / (n - k);
-
+  // assign outcomes to output field object
   arma::colvec betas;
   if(p != 0) betas = coef.rows(1, p - nz);
 
@@ -214,11 +217,10 @@ double S2_AR(
   // assign outputs from (A)DF regression
   arma::colvec res = F(0, 0);
 
-
   int n = dat.n_cols;
   double sigmahat2 =  arma::as_scalar(
     // (w)
-    arma::trans(res)*res / (n - F(2,0).n_rows)
+    arma::trans(res) * res / (n - F(2,0).n_rows)
     );
 
   //double sigmahat2 = arma::as_scalar(F(1, 0));
@@ -367,7 +369,7 @@ arma::uvec test(int p, const arma::uvec& remove_lags) {
 
 }
 
-// function which comutes BIC for an ADF model
+// function which computes BIC for an ADF model
 // [[Rcpp::export]]
 double BIC(const arma::mat& Y,
            const int& p,
@@ -393,7 +395,53 @@ double BIC(const arma::mat& Y,
   return BIC;
 }
 
+// function which performs local GLS detrending of a time series
+// [[Rcpp::export]]
+arma::mat GLS_Detrend(arma::mat dat, std::string model) {
 
+  int T = dat.n_cols;
+
+  arma::vec X_cbar = vectorise(dat);
+  arma::mat z_cbar(T, 1, fill::zeros);
+  arma::mat res(1, T, fill::zeros);
+
+  if(model == "c") {
+    double cbar = 7;
+
+    for(int i = 1; i<T; i++) {
+      X_cbar(i, 0) = dat(0, i) - (1-cbar/T) * dat(0, i-1);
+    }
+
+    z_cbar.fill(1-(1-cbar/T));
+    z_cbar(0, 0) = 1;
+
+    // run regression and obtain residuals
+    arma::colvec beta = arma::solve(z_cbar, X_cbar);
+    res = dat - as_scalar(beta);
+
+  } else if(model == "ct") {
+    double cbar = 13.5;
+    arma::vec trd = seq_cpp(1, T);
+
+    z_cbar.set_size(T, 2);
+    z_cbar.col(0).fill(1-(1-cbar/T));
+    z_cbar(0, 0) = 1;
+    z_cbar(0, 1) = 1;
+
+    for(int i = 1; i<T; i++) {
+      X_cbar(i, 0) = dat(0, i) - (1-cbar/T) * dat(0, i-1);
+      z_cbar(i, 1) = i+1 - (1-cbar/T) * i;
+    }
+
+    // run regression and obtain residuals
+    arma::colvec beta = arma::solve(z_cbar, X_cbar);
+    res = dat - as_scalar(beta(0, 0)) - beta(1, 0) * trd.t();
+
+  }
+
+  return res;
+
+}
 
 
 

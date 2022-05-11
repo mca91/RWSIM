@@ -158,6 +158,18 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// GLS_Detrend
+arma::mat GLS_Detrend(arma::mat dat, std::string model);
+RcppExport SEXP _RWSIM_GLS_Detrend(SEXP datSEXP, SEXP modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type dat(datSEXP);
+    Rcpp::traits::input_parameter< std::string >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(GLS_Detrend(dat, model));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_seq_cpp", (DL_FUNC) &_RWSIM_seq_cpp, 2},
@@ -171,6 +183,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_ARMA_sim", (DL_FUNC) &_RWSIM_ARMA_sim, 5},
     {"_RWSIM_test", (DL_FUNC) &_RWSIM_test, 2},
     {"_RWSIM_BIC", (DL_FUNC) &_RWSIM_BIC, 4},
+    {"_RWSIM_GLS_Detrend", (DL_FUNC) &_RWSIM_GLS_Detrend, 2},
     {NULL, NULL, 0}
 };
 
