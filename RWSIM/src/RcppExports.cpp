@@ -194,9 +194,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// BIC
-double BIC(const arma::mat& Y, const int& p, const int& pmax, const std::string& model, const arma::uvec& remove_lags);
-RcppExport SEXP _RWSIM_BIC(SEXP YSEXP, SEXP pSEXP, SEXP pmaxSEXP, SEXP modelSEXP, SEXP remove_lagsSEXP) {
+// IC
+double IC(const arma::mat& Y, const int& p, const int& pmax, const std::string& model, const arma::uvec& remove_lags, const std::string& penalty, const bool& modified);
+RcppExport SEXP _RWSIM_IC(SEXP YSEXP, SEXP pSEXP, SEXP pmaxSEXP, SEXP modelSEXP, SEXP remove_lagsSEXP, SEXP penaltySEXP, SEXP modifiedSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -205,7 +205,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int& >::type pmax(pmaxSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type model(modelSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type remove_lags(remove_lagsSEXP);
-    rcpp_result_gen = Rcpp::wrap(BIC(Y, p, pmax, model, remove_lags));
+    Rcpp::traits::input_parameter< const std::string& >::type penalty(penaltySEXP);
+    Rcpp::traits::input_parameter< const bool& >::type modified(modifiedSEXP);
+    rcpp_result_gen = Rcpp::wrap(IC(Y, p, pmax, model, remove_lags, penalty, modified));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -252,7 +254,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_ERS", (DL_FUNC) &_RWSIM_ERS, 4},
     {"_RWSIM_OLSRes", (DL_FUNC) &_RWSIM_OLSRes, 2},
     {"_RWSIM_ARMA_sim", (DL_FUNC) &_RWSIM_ARMA_sim, 6},
-    {"_RWSIM_BIC", (DL_FUNC) &_RWSIM_BIC, 5},
+    {"_RWSIM_IC", (DL_FUNC) &_RWSIM_IC, 7},
     {"_RWSIM_Mtests", (DL_FUNC) &_RWSIM_Mtests, 4},
     {"_RWSIM_DF_Reg_NB", (DL_FUNC) &_RWSIM_DF_Reg_NB, 3},
     {NULL, NULL, 0}

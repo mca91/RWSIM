@@ -57,8 +57,8 @@ ARMA_sim <- function(ar_coefs, ma_coefs, innovs, cumsum = FALSE, rho = 1, delta 
     .Call(`_RWSIM_ARMA_sim`, ar_coefs, ma_coefs, innovs, cumsum, rho, delta)
 }
 
-BIC <- function(Y, p, pmax, model, remove_lags) {
-    .Call(`_RWSIM_BIC`, Y, p, pmax, model, remove_lags)
+IC <- function(Y, p, pmax, model, remove_lags, penalty = "BIC", modified = FALSE) {
+    .Call(`_RWSIM_IC`, Y, p, pmax, model, remove_lags, penalty, modified)
 }
 
 Mtests <- function(dat, p, model, remove_lags) {
