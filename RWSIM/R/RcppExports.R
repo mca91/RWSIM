@@ -5,6 +5,14 @@ seq_cpp <- function(lo, hi) {
     .Call(`_RWSIM_seq_cpp`, lo, hi)
 }
 
+t_col_sum <- function(dat, t) {
+    .Call(`_RWSIM_t_col_sum`, dat, t)
+}
+
+detrend_recursive <- function(dat) {
+    .Call(`_RWSIM_detrend_recursive`, dat)
+}
+
 mlag <- function(dat, p, drop) {
     .Call(`_RWSIM_mlag`, dat, p, drop)
 }
@@ -15,6 +23,14 @@ mdiff <- function(dat, p, drop) {
 
 DF_Reg_Mat <- function(y, p, model = "nc", omit_y_lag = FALSE) {
     .Call(`_RWSIM_DF_Reg_Mat`, y, p, model, omit_y_lag)
+}
+
+Detrend <- function(Y, model = "c") {
+    .Call(`_RWSIM_Detrend`, Y, model)
+}
+
+GLS_Detrend <- function(dat, model) {
+    .Call(`_RWSIM_GLS_Detrend`, dat, model)
 }
 
 DF_Reg_field <- function(Y, p, model, remove_lags) {
@@ -29,23 +45,27 @@ DF_Reg <- function(Y, p, model, remove_lags) {
     .Call(`_RWSIM_DF_Reg`, Y, p, model, remove_lags)
 }
 
+ERS <- function(dat, p, model, remove_lags) {
+    .Call(`_RWSIM_ERS`, dat, p, model, remove_lags)
+}
+
 OLSRes <- function(y, X) {
     .Call(`_RWSIM_OLSRes`, y, X)
 }
 
-ARMA_sim <- function(ar_coefs, ma_coefs, innovs, cumsum = FALSE, rho = 1) {
-    .Call(`_RWSIM_ARMA_sim`, ar_coefs, ma_coefs, innovs, cumsum, rho)
+ARMA_sim <- function(ar_coefs, ma_coefs, innovs, cumsum = FALSE, rho = 1, delta = 0) {
+    .Call(`_RWSIM_ARMA_sim`, ar_coefs, ma_coefs, innovs, cumsum, rho, delta)
 }
 
-test <- function(p, remove_lags) {
-    .Call(`_RWSIM_test`, p, remove_lags)
+BIC <- function(Y, p, pmax, model, remove_lags) {
+    .Call(`_RWSIM_BIC`, Y, p, pmax, model, remove_lags)
 }
 
-BIC <- function(Y, p, model, remove_lags) {
-    .Call(`_RWSIM_BIC`, Y, p, model, remove_lags)
+Mtests <- function(dat, p, model, remove_lags) {
+    .Call(`_RWSIM_Mtests`, dat, p, model, remove_lags)
 }
 
-GLS_Detrend <- function(dat, model) {
-    .Call(`_RWSIM_GLS_Detrend`, dat, model)
+DF_Reg_NB <- function(y, p, model) {
+    .Call(`_RWSIM_DF_Reg_NB`, y, p, model)
 }
 
