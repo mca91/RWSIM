@@ -488,20 +488,26 @@ arma::mat ARMA_sim(
 }
 
 
-// function which computes BIC for an ADF model
+// function which computes (M)AIC/(M)BIC for an ADF model
 // [[Rcpp::export]]
-double BIC(const arma::mat& Y,
+double IC(const arma::mat& Y,
            const int& p,
            const int& pmax,
            const std::string& model,
-           const arma::uvec& remove_lags) {
+           const arma::uvec& remove_lags,
+           const std::string& penalty = "BIC",
+           const bool& modified = false
+           ) {
 
   // time series length
   double T = Y.n_elem;
   // do the regression stuff
   arma::field<arma::mat> reg_results = DF_Reg_field(Y, p, model, remove_lags);
-  // obtain residuals
+  // obtain residuals, trimmed levels, rho estimate
   arma::mat e = reg_results(0, 0);
+  arma::mat yLag = Y.cols(pmax + 1, Y.n_cols - 2);
+  arma::mat hat_rho = reg_results(1, 0);
+
   if(pmax > p) e.shed_rows(0, pmax-p-1);
 
   // number of estimated coefficients on lagged differences in ADF regression
@@ -510,14 +516,26 @@ double BIC(const arma::mat& Y,
   // estimate sigma
   double hat_sigma_sq = arma::as_scalar(arma::trans(e) * e / (T - pmax));
 
-  // compute Bic
-  double BIC = log(hat_sigma_sq) + k * log(T) / T;
+  // compute tau
+  double tau = 0;
+  if(modified) tau = 1 / (hat_sigma_sq) * dot(hat_rho, hat_rho) * dot(yLag, yLag);
 
-  return BIC;
+  // compute penalty term
+  double C;
+  if(penalty == "BIC") {
+    C = log(T);
+  } else {
+    C = 2; // AIC
+  }
+
+  // compute (M)IC
+  double IC = log(hat_sigma_sq) + k * (C + tau) / T;
+
+  return IC;
 }
 
 
-// function for computing Stock's M-tests
+// Function for computing Stock's M-tests
 // [[Rcpp::export]]
 arma::mat Mtests(
     const arma::mat dat,
