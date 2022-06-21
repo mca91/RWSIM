@@ -179,8 +179,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // ARMA_sim
-arma::mat ARMA_sim(arma::vec ar_coefs, arma::vec ma_coefs, const arma::vec& innovs, const bool& cumsum, const double& rho, const double& delta);
-RcppExport SEXP _RWSIM_ARMA_sim(SEXP ar_coefsSEXP, SEXP ma_coefsSEXP, SEXP innovsSEXP, SEXP cumsumSEXP, SEXP rhoSEXP, SEXP deltaSEXP) {
+arma::mat ARMA_sim(arma::vec ar_coefs, arma::vec ma_coefs, const arma::vec& innovs, const bool& cumsum, const double& rho, const double& mu, const double& delta);
+RcppExport SEXP _RWSIM_ARMA_sim(SEXP ar_coefsSEXP, SEXP ma_coefsSEXP, SEXP innovsSEXP, SEXP cumsumSEXP, SEXP rhoSEXP, SEXP muSEXP, SEXP deltaSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -189,8 +189,9 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::vec& >::type innovs(innovsSEXP);
     Rcpp::traits::input_parameter< const bool& >::type cumsum(cumsumSEXP);
     Rcpp::traits::input_parameter< const double& >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< const double& >::type mu(muSEXP);
     Rcpp::traits::input_parameter< const double& >::type delta(deltaSEXP);
-    rcpp_result_gen = Rcpp::wrap(ARMA_sim(ar_coefs, ma_coefs, innovs, cumsum, rho, delta));
+    rcpp_result_gen = Rcpp::wrap(ARMA_sim(ar_coefs, ma_coefs, innovs, cumsum, rho, mu, delta));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -225,16 +226,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// DF_Reg_NB
-double DF_Reg_NB(arma::mat y, int p, std::string model);
-RcppExport SEXP _RWSIM_DF_Reg_NB(SEXP ySEXP, SEXP pSEXP, SEXP modelSEXP) {
+// forecast_ADF
+arma::mat forecast_ADF(const arma::rowvec& y, const arma::colvec& coefs, const arma::uvec& vars, const std::string& model, const int& h, const bool& differences);
+RcppExport SEXP _RWSIM_forecast_ADF(SEXP ySEXP, SEXP coefsSEXP, SEXP varsSEXP, SEXP modelSEXP, SEXP hSEXP, SEXP differencesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type y(ySEXP);
-    Rcpp::traits::input_parameter< int >::type p(pSEXP);
-    Rcpp::traits::input_parameter< std::string >::type model(modelSEXP);
-    rcpp_result_gen = Rcpp::wrap(DF_Reg_NB(y, p, model));
+    Rcpp::traits::input_parameter< const arma::rowvec& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const arma::colvec& >::type coefs(coefsSEXP);
+    Rcpp::traits::input_parameter< const arma::uvec& >::type vars(varsSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< const int& >::type h(hSEXP);
+    Rcpp::traits::input_parameter< const bool& >::type differences(differencesSEXP);
+    rcpp_result_gen = Rcpp::wrap(forecast_ADF(y, coefs, vars, model, h, differences));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -253,10 +257,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_DF_Reg", (DL_FUNC) &_RWSIM_DF_Reg, 4},
     {"_RWSIM_ERS", (DL_FUNC) &_RWSIM_ERS, 4},
     {"_RWSIM_OLSRes", (DL_FUNC) &_RWSIM_OLSRes, 2},
-    {"_RWSIM_ARMA_sim", (DL_FUNC) &_RWSIM_ARMA_sim, 6},
+    {"_RWSIM_ARMA_sim", (DL_FUNC) &_RWSIM_ARMA_sim, 7},
     {"_RWSIM_IC", (DL_FUNC) &_RWSIM_IC, 7},
     {"_RWSIM_Mtests", (DL_FUNC) &_RWSIM_Mtests, 4},
-    {"_RWSIM_DF_Reg_NB", (DL_FUNC) &_RWSIM_DF_Reg_NB, 3},
+    {"_RWSIM_forecast_ADF", (DL_FUNC) &_RWSIM_forecast_ADF, 6},
     {NULL, NULL, 0}
 };
 

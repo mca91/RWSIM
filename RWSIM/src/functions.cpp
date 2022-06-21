@@ -389,12 +389,12 @@ double ERS(const arma::mat& dat,
            ) {
 
   arma::mat dat_detr = GLS_Detrend(dat, model);
-  double t = 0;
-  if(model == "c") {
-    t = DF_Reg(dat_detr, p, "nc", remove_lags);
-  } else if(model == "ct") {
-    t = DF_Reg(dat_detr, p, "c", remove_lags);
-  }
+  //double t = 0;
+  //if(model == "c") {
+  double t = DF_Reg(dat_detr, p, "nc", remove_lags);
+  //} else if(model == "ct") {
+   // t = DF_Reg(dat_detr, p, "c", remove_lags);
+  //}
   return t;
 }
 
@@ -426,8 +426,9 @@ arma::mat ARMA_sim(
     arma::vec ar_coefs,           // vector of AR coefficients
     arma::vec ma_coefs,           // vector of MA coefficients
     const arma::vec& innovs,      // vector of innovations
-    const bool& cumsum = false,   // should cumsum of series be returned?
-    const double& rho = 1,        // for ADF-regression-type GDP
+    const bool& cumsum = false,   // should cumsum of series be returned? (set true ADF-regression-type GDP)
+    const double& rho = 1,        // coefficient on (rho-1) in ADF-regression-type GDP (set 1 for ARMA DGP)
+    const double& mu = 0,         // drift coefficient in ADF-regression-type GDP
     const double& delta = 0       // trend coefficient in ADF-regression-type GDP
 ) {
 
@@ -470,7 +471,7 @@ arma::mat ARMA_sim(
     // run ARMA recursion, return (cumsum of) series
     if(p != 0) {
       for(size_t t=p; t<n+p; t++) {
-        u.row(t) = (rho - 1.0) * accu(u) + phi.t() * u(span(t-p, t-1)) + delta * tr.row(t-p) + ma.row(t-p);
+        u.row(t) = (rho - 1.0) * accu(u) + phi.t() * u(span(t-p, t-1)) + mu + delta * tr.row(t-p) + ma.row(t-p);
       }
       if(cumsum) {
         u = arma::cumsum(u);
@@ -525,11 +526,11 @@ double IC(const arma::mat& Y,
   if(penalty == "BIC") {
     C = log(T);
   } else {
-    C = 2; // AIC
+    C = 2.0; // AIC
   }
 
   // compute (M)IC
-  double IC = log(hat_sigma_sq) + k * (C + tau) / T;
+  double IC = log(hat_sigma_sq) + C * (k + tau) / (T - pmax);
 
   return IC;
 }
@@ -566,22 +567,39 @@ arma::mat Mtests(
 
 }
 
-// fast function which computes a time series DF-regression and returns the normalized bias statistic
+// forecast an ADF model in levels or differences
 // [[Rcpp::export]]
-double DF_Reg_NB(arma::mat y, int p, std::string model) {
+arma::mat forecast_ADF(const arma::rowvec& y,
+                       const arma::colvec& coefs,
+                       const arma::uvec& vars,
+                       const std::string& model,
+                       const int& h,
+                       const bool& differences = true
+) {
+  arma::uword Tx = y.n_elem;
+  int pmax = max(vars) - 1;
 
-  size_t T = y.n_cols;
+  arma::mat y_and_pred(1, Tx + h, fill::zeros);
+  y_and_pred.cols(0, Tx-1) = y;
 
-  arma::mat X = DF_Reg_Mat(y, p, model);
+  arma::mat y_diff_pred(1, h, fill::zeros);
 
-  y = mdiff(y, 0, true);
-  y = y.rows(p, y.n_rows-1);
+  arma::mat X(1, vars.n_elem);
 
-  arma::colvec coef = arma::solve(X, y);
+  for(int i = 0; i<h; i++) {
+    arma::uvec Tx_act = {Tx-2-pmax+i};
+    X = DF_Reg_Mat(y_and_pred.cols(0, Tx-1+i), pmax, model, false).submat(Tx_act, vars-1);
+    y_diff_pred.col(i) = X * coefs;
+    y_and_pred.col(Tx+i) = accu(join_rows(y_and_pred.col(Tx-1), y_diff_pred));
+  }
+  y_and_pred.shed_cols(0, Tx-1);
 
-  double nbs = T * coef(0);
+  if(differences) {
+    return(y_diff_pred);
+  } else {
+    return(y_and_pred);
+  }
 
-  return nbs;
 }
 
 

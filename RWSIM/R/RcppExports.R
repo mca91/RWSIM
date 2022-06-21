@@ -53,8 +53,8 @@ OLSRes <- function(y, X) {
     .Call(`_RWSIM_OLSRes`, y, X)
 }
 
-ARMA_sim <- function(ar_coefs, ma_coefs, innovs, cumsum = FALSE, rho = 1, delta = 0) {
-    .Call(`_RWSIM_ARMA_sim`, ar_coefs, ma_coefs, innovs, cumsum, rho, delta)
+ARMA_sim <- function(ar_coefs, ma_coefs, innovs, cumsum = FALSE, rho = 1, mu = 0, delta = 0) {
+    .Call(`_RWSIM_ARMA_sim`, ar_coefs, ma_coefs, innovs, cumsum, rho, mu, delta)
 }
 
 IC <- function(Y, p, pmax, model, remove_lags, penalty = "BIC", modified = FALSE) {
@@ -65,7 +65,7 @@ Mtests <- function(dat, p, model, remove_lags) {
     .Call(`_RWSIM_Mtests`, dat, p, model, remove_lags)
 }
 
-DF_Reg_NB <- function(y, p, model) {
-    .Call(`_RWSIM_DF_Reg_NB`, y, p, model)
+forecast_ADF <- function(y, coefs, vars, model, h, differences = TRUE) {
+    .Call(`_RWSIM_forecast_ADF`, y, coefs, vars, model, h, differences)
 }
 
