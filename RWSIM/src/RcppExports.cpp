@@ -226,6 +226,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// DF_Pred_regressors
+arma::mat DF_Pred_regressors(const arma::mat& y, const int& p, const std::string& model);
+RcppExport SEXP _RWSIM_DF_Pred_regressors(SEXP ySEXP, SEXP pSEXP, SEXP modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type y(ySEXP);
+    Rcpp::traits::input_parameter< const int& >::type p(pSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(DF_Pred_regressors(y, p, model));
+    return rcpp_result_gen;
+END_RCPP
+}
 // forecast_ADF
 arma::mat forecast_ADF(const arma::rowvec& y, const arma::colvec& coefs, const arma::uvec& vars, const std::string& model, const int& h, const bool& differences);
 RcppExport SEXP _RWSIM_forecast_ADF(SEXP ySEXP, SEXP coefsSEXP, SEXP varsSEXP, SEXP modelSEXP, SEXP hSEXP, SEXP differencesSEXP) {
@@ -260,6 +273,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_ARMA_sim", (DL_FUNC) &_RWSIM_ARMA_sim, 7},
     {"_RWSIM_IC", (DL_FUNC) &_RWSIM_IC, 7},
     {"_RWSIM_Mtests", (DL_FUNC) &_RWSIM_Mtests, 4},
+    {"_RWSIM_DF_Pred_regressors", (DL_FUNC) &_RWSIM_DF_Pred_regressors, 3},
     {"_RWSIM_forecast_ADF", (DL_FUNC) &_RWSIM_forecast_ADF, 6},
     {NULL, NULL, 0}
 };

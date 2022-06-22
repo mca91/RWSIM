@@ -57,7 +57,7 @@ arma::mat mlag(const arma::mat& dat,
                const int& p,
                const bool& drop) {
 
-  // initialize output matrix with desiered dimensions and
+  // initialize output matrix with desired dimensions and
   // fill with ones
   arma::mat out(dat.n_rows * (dat.n_cols-p), p+1, fill::ones);
   // append lag series up to order p
@@ -108,7 +108,8 @@ arma::mat mdiff(const arma::mat& dat,
 arma::mat DF_Reg_Mat(const arma::mat& y,
                      const int& p,
                      const std::string& model = "nc",
-                     const bool& omit_y_lag = false) {
+                     const bool& omit_y_lag = false
+                     ) {
 
   // output matrix
   arma::mat X;
@@ -567,6 +568,31 @@ arma::mat Mtests(
 
 }
 
+
+// function which computes a regressor matrix for DF regressions
+// [[Rcpp::export]]
+arma::mat DF_Pred_regressors(const arma::mat& y,
+                     const int& p,
+                     const std::string& model = "nc"
+) {
+
+  // output matrix
+  arma::mat X(1, p+1);
+  // compute first differences
+  arma::mat ydiff = mdiff(y, 0, true);
+
+  X.col(0) = y.tail_cols(arma::uword(1));
+
+  if(p>0) {
+    for(int i=1; i<=p; i++) {
+      X.col(i) = ydiff.row(ydiff.n_elem-i);
+    }
+  }
+
+  return X;
+}
+
+
 // forecast an ADF model in levels or differences
 // [[Rcpp::export]]
 arma::mat forecast_ADF(const arma::rowvec& y,
@@ -588,7 +614,7 @@ arma::mat forecast_ADF(const arma::rowvec& y,
 
   for(int i = 0; i<h; i++) {
     arma::uvec Tx_act = {Tx-2-pmax+i};
-    X = DF_Reg_Mat(y_and_pred.cols(0, Tx-1+i), pmax, model, false).submat(Tx_act, vars-1);
+    X = DF_Pred_regressors(y_and_pred.cols(0, Tx-1+i), pmax, model).cols(vars-1);
     y_diff_pred.col(i) = X * coefs;
     y_and_pred.col(Tx+i) = accu(join_rows(y_and_pred.col(Tx-1), y_diff_pred));
   }
@@ -601,5 +627,3 @@ arma::mat forecast_ADF(const arma::rowvec& y,
   }
 
 }
-
-

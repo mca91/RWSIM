@@ -65,6 +65,10 @@ Mtests <- function(dat, p, model, remove_lags) {
     .Call(`_RWSIM_Mtests`, dat, p, model, remove_lags)
 }
 
+DF_Pred_regressors <- function(y, p, model = "nc") {
+    .Call(`_RWSIM_DF_Pred_regressors`, y, p, model)
+}
+
 forecast_ADF <- function(y, coefs, vars, model, h, differences = TRUE) {
     .Call(`_RWSIM_forecast_ADF`, y, coefs, vars, model, h, differences)
 }
