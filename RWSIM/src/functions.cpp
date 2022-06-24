@@ -613,8 +613,8 @@ arma::mat forecast_ADF(const arma::rowvec& y,
   arma::mat X(1, vars.n_elem);
 
   for(int i = 0; i<h; i++) {
-    arma::uvec Tx_act = {Tx-2-pmax+i};
-    X = DF_Pred_regressors(y_and_pred.cols(0, Tx-1+i), pmax, model).cols(vars-1);
+    //arma::uvec Tx_act = {Tx-2-pmax+i};
+    X = DF_Pred_regressors(y_and_pred.cols(0, Tx-1+i), pmax, model);
     y_diff_pred.col(i) = X * coefs;
     y_and_pred.col(Tx+i) = accu(join_rows(y_and_pred.col(Tx-1), y_diff_pred));
   }
