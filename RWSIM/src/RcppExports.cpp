@@ -11,6 +11,18 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// ar1_sim
+arma::mat ar1_sim(const double& rho, const arma::vec& innovs);
+RcppExport SEXP _RWSIM_ar1_sim(SEXP rhoSEXP, SEXP innovsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const double& >::type rho(rhoSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type innovs(innovsSEXP);
+    rcpp_result_gen = Rcpp::wrap(ar1_sim(rho, innovs));
+    return rcpp_result_gen;
+END_RCPP
+}
 // seq_cpp
 arma::vec seq_cpp(const int& lo, const int& hi);
 RcppExport SEXP _RWSIM_seq_cpp(SEXP loSEXP, SEXP hiSEXP) {
@@ -73,8 +85,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // DF_Reg_Mat
-arma::mat DF_Reg_Mat(const arma::mat& y, const int& p, const std::string& model, const bool& omit_y_lag);
-RcppExport SEXP _RWSIM_DF_Reg_Mat(SEXP ySEXP, SEXP pSEXP, SEXP modelSEXP, SEXP omit_y_lagSEXP) {
+arma::mat DF_Reg_Mat(const arma::mat& y, const int& p, const std::string& model, const bool& omit_y_lag, const int& trim);
+RcppExport SEXP _RWSIM_DF_Reg_Mat(SEXP ySEXP, SEXP pSEXP, SEXP modelSEXP, SEXP omit_y_lagSEXP, SEXP trimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -82,19 +94,32 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int& >::type p(pSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type model(modelSEXP);
     Rcpp::traits::input_parameter< const bool& >::type omit_y_lag(omit_y_lagSEXP);
-    rcpp_result_gen = Rcpp::wrap(DF_Reg_Mat(y, p, model, omit_y_lag));
+    Rcpp::traits::input_parameter< const int& >::type trim(trimSEXP);
+    rcpp_result_gen = Rcpp::wrap(DF_Reg_Mat(y, p, model, omit_y_lag, trim));
     return rcpp_result_gen;
 END_RCPP
 }
 // Detrend
-arma::mat Detrend(arma::mat Y, std::string model);
+arma::mat Detrend(const arma::mat& Y, const std::string& model);
 RcppExport SEXP _RWSIM_Detrend(SEXP YSEXP, SEXP modelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type Y(YSEXP);
-    Rcpp::traits::input_parameter< std::string >::type model(modelSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type model(modelSEXP);
     rcpp_result_gen = Rcpp::wrap(Detrend(Y, model));
+    return rcpp_result_gen;
+END_RCPP
+}
+// FD_Detrend
+arma::mat FD_Detrend(const arma::mat& Y, const std::string& model);
+RcppExport SEXP _RWSIM_FD_Detrend(SEXP YSEXP, SEXP modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type Y(YSEXP);
+    Rcpp::traits::input_parameter< const std::string& >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(FD_Detrend(Y, model));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -111,8 +136,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // DF_Reg_field
-arma::field<arma::mat> DF_Reg_field(const arma::mat& Y, const int& p, const std::string& model, const arma::uvec& remove_lags);
-RcppExport SEXP _RWSIM_DF_Reg_field(SEXP YSEXP, SEXP pSEXP, SEXP modelSEXP, SEXP remove_lagsSEXP) {
+arma::field<arma::mat> DF_Reg_field(const arma::mat& Y, const int& p, const std::string& model, const arma::uvec& remove_lags, const int& trim);
+RcppExport SEXP _RWSIM_DF_Reg_field(SEXP YSEXP, SEXP pSEXP, SEXP modelSEXP, SEXP remove_lagsSEXP, SEXP trimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -120,7 +145,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int& >::type p(pSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type model(modelSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type remove_lags(remove_lagsSEXP);
-    rcpp_result_gen = Rcpp::wrap(DF_Reg_field(Y, p, model, remove_lags));
+    Rcpp::traits::input_parameter< const int& >::type trim(trimSEXP);
+    rcpp_result_gen = Rcpp::wrap(DF_Reg_field(Y, p, model, remove_lags, trim));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -139,8 +165,8 @@ BEGIN_RCPP
 END_RCPP
 }
 // DF_Reg
-double DF_Reg(const arma::mat& Y, const int& p, const std::string& model, const arma::uvec& remove_lags);
-RcppExport SEXP _RWSIM_DF_Reg(SEXP YSEXP, SEXP pSEXP, SEXP modelSEXP, SEXP remove_lagsSEXP) {
+double DF_Reg(const arma::mat& Y, const int& p, const std::string& model, const arma::uvec& remove_lags, const int& trim);
+RcppExport SEXP _RWSIM_DF_Reg(SEXP YSEXP, SEXP pSEXP, SEXP modelSEXP, SEXP remove_lagsSEXP, SEXP trimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -148,13 +174,14 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int& >::type p(pSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type model(modelSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type remove_lags(remove_lagsSEXP);
-    rcpp_result_gen = Rcpp::wrap(DF_Reg(Y, p, model, remove_lags));
+    Rcpp::traits::input_parameter< const int& >::type trim(trimSEXP);
+    rcpp_result_gen = Rcpp::wrap(DF_Reg(Y, p, model, remove_lags, trim));
     return rcpp_result_gen;
 END_RCPP
 }
 // ERS
-double ERS(const arma::mat& dat, const int& p, const std::string& model, const arma::uvec& remove_lags);
-RcppExport SEXP _RWSIM_ERS(SEXP datSEXP, SEXP pSEXP, SEXP modelSEXP, SEXP remove_lagsSEXP) {
+double ERS(const arma::mat& dat, const int& p, const std::string& model, const arma::uvec& remove_lags, const int& trim);
+RcppExport SEXP _RWSIM_ERS(SEXP datSEXP, SEXP pSEXP, SEXP modelSEXP, SEXP remove_lagsSEXP, SEXP trimSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -162,7 +189,8 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const int& >::type p(pSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type model(modelSEXP);
     Rcpp::traits::input_parameter< const arma::uvec& >::type remove_lags(remove_lagsSEXP);
-    rcpp_result_gen = Rcpp::wrap(ERS(dat, p, model, remove_lags));
+    Rcpp::traits::input_parameter< const int& >::type trim(trimSEXP);
+    rcpp_result_gen = Rcpp::wrap(ERS(dat, p, model, remove_lags, trim));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -240,41 +268,56 @@ BEGIN_RCPP
 END_RCPP
 }
 // forecast_ADF
-arma::mat forecast_ADF(const arma::rowvec& y, const arma::colvec& coefs, const arma::uvec& vars, const std::string& model, const int& h, const bool& differences);
-RcppExport SEXP _RWSIM_forecast_ADF(SEXP ySEXP, SEXP coefsSEXP, SEXP varsSEXP, SEXP modelSEXP, SEXP hSEXP, SEXP differencesSEXP) {
+arma::mat forecast_ADF(const arma::rowvec& y, const arma::colvec& coefs, const int& pmax, const std::string& model, const int& h, const bool& differences);
+RcppExport SEXP _RWSIM_forecast_ADF(SEXP ySEXP, SEXP coefsSEXP, SEXP pmaxSEXP, SEXP modelSEXP, SEXP hSEXP, SEXP differencesSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::rowvec& >::type y(ySEXP);
     Rcpp::traits::input_parameter< const arma::colvec& >::type coefs(coefsSEXP);
-    Rcpp::traits::input_parameter< const arma::uvec& >::type vars(varsSEXP);
+    Rcpp::traits::input_parameter< const int& >::type pmax(pmaxSEXP);
     Rcpp::traits::input_parameter< const std::string& >::type model(modelSEXP);
     Rcpp::traits::input_parameter< const int& >::type h(hSEXP);
     Rcpp::traits::input_parameter< const bool& >::type differences(differencesSEXP);
-    rcpp_result_gen = Rcpp::wrap(forecast_ADF(y, coefs, vars, model, h, differences));
+    rcpp_result_gen = Rcpp::wrap(forecast_ADF(y, coefs, pmax, model, h, differences));
+    return rcpp_result_gen;
+END_RCPP
+}
+// test
+int test(int pmax, arma::uvec remove_lags);
+RcppExport SEXP _RWSIM_test(SEXP pmaxSEXP, SEXP remove_lagsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type pmax(pmaxSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type remove_lags(remove_lagsSEXP);
+    rcpp_result_gen = Rcpp::wrap(test(pmax, remove_lags));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_RWSIM_ar1_sim", (DL_FUNC) &_RWSIM_ar1_sim, 2},
     {"_RWSIM_seq_cpp", (DL_FUNC) &_RWSIM_seq_cpp, 2},
     {"_RWSIM_t_col_sum", (DL_FUNC) &_RWSIM_t_col_sum, 2},
     {"_RWSIM_detrend_recursive", (DL_FUNC) &_RWSIM_detrend_recursive, 1},
     {"_RWSIM_mlag", (DL_FUNC) &_RWSIM_mlag, 3},
     {"_RWSIM_mdiff", (DL_FUNC) &_RWSIM_mdiff, 3},
-    {"_RWSIM_DF_Reg_Mat", (DL_FUNC) &_RWSIM_DF_Reg_Mat, 4},
+    {"_RWSIM_DF_Reg_Mat", (DL_FUNC) &_RWSIM_DF_Reg_Mat, 5},
     {"_RWSIM_Detrend", (DL_FUNC) &_RWSIM_Detrend, 2},
+    {"_RWSIM_FD_Detrend", (DL_FUNC) &_RWSIM_FD_Detrend, 2},
     {"_RWSIM_GLS_Detrend", (DL_FUNC) &_RWSIM_GLS_Detrend, 2},
-    {"_RWSIM_DF_Reg_field", (DL_FUNC) &_RWSIM_DF_Reg_field, 4},
+    {"_RWSIM_DF_Reg_field", (DL_FUNC) &_RWSIM_DF_Reg_field, 5},
     {"_RWSIM_S2_AR", (DL_FUNC) &_RWSIM_S2_AR, 4},
-    {"_RWSIM_DF_Reg", (DL_FUNC) &_RWSIM_DF_Reg, 4},
-    {"_RWSIM_ERS", (DL_FUNC) &_RWSIM_ERS, 4},
+    {"_RWSIM_DF_Reg", (DL_FUNC) &_RWSIM_DF_Reg, 5},
+    {"_RWSIM_ERS", (DL_FUNC) &_RWSIM_ERS, 5},
     {"_RWSIM_OLSRes", (DL_FUNC) &_RWSIM_OLSRes, 2},
     {"_RWSIM_ARMA_sim", (DL_FUNC) &_RWSIM_ARMA_sim, 7},
     {"_RWSIM_IC", (DL_FUNC) &_RWSIM_IC, 7},
     {"_RWSIM_Mtests", (DL_FUNC) &_RWSIM_Mtests, 4},
     {"_RWSIM_DF_Pred_regressors", (DL_FUNC) &_RWSIM_DF_Pred_regressors, 3},
     {"_RWSIM_forecast_ADF", (DL_FUNC) &_RWSIM_forecast_ADF, 6},
+    {"_RWSIM_test", (DL_FUNC) &_RWSIM_test, 2},
     {NULL, NULL, 0}
 };
 

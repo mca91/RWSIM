@@ -1,6 +1,7 @@
 // -*- mode: C++; c-indent-level: 4; c-basic-offset: 4; indent-tabs-mode: nil; -*-
 
 // we only include RcppArmadillo.h which pulls Rcpp.h in for us
+#define ARMA_DONT_USE_OPENMP 1
 #include "RcppArmadillo.h"
 
 // [[Rcpp::depends(RcppArmadillo)]]
@@ -11,6 +12,23 @@ using namespace Rcpp;
 // [[Rcpp::plugins("cpp11")]]
 
 // *****************************************************************************//
+
+// very simple AR(1) model simulation for checks
+// [[Rcpp::export]]
+arma::mat ar1_sim(const double& rho,
+                  const arma::vec& innovs
+                  ) {
+  int T = innovs.n_elem;
+  arma::vec out(T+1, fill::zeros);
+
+  for(int i = 1; i<=T; i++) {
+    out[i] = rho * out[i-1] + innovs[i-1];
+  }
+
+  return(std::move(out));
+
+}
+
 
 // simple armadillo version of R's base::seq()
 // [[Rcpp::export]]
@@ -108,7 +126,8 @@ arma::mat mdiff(const arma::mat& dat,
 arma::mat DF_Reg_Mat(const arma::mat& y,
                      const int& p,
                      const std::string& model = "nc",
-                     const bool& omit_y_lag = false
+                     const bool& omit_y_lag = false,
+                     const int& trim = 0
                      ) {
 
   // output matrix
@@ -154,16 +173,17 @@ arma::mat DF_Reg_Mat(const arma::mat& y,
       X = ylag;
     }
   }
-  if(X.n_cols > 1 && omit_y_lag) {
-    X.shed_col(0);
-  }
+  if(X.n_cols > 1 && omit_y_lag) X.shed_col(0);
+
+  if(trim > p) X.shed_rows(0, trim - p - 1);
+
   return X;
 }
 
 // function which OLS-detrends a time series supplied in a 1xT matrix
 // and returns a matrix of the same dimension
 // [[Rcpp::export]]
-arma::mat Detrend(arma::mat Y, std::string model = "c") {
+arma::mat Detrend(const arma::mat& Y, const std::string& model = "c") {
   if(model == "nc") {
     return Y;
   }
@@ -178,6 +198,40 @@ arma::mat Detrend(arma::mat Y, std::string model = "c") {
   // run regression and obtain the detrended series (the residuals)
   arma::colvec beta = arma::solve(X, y);
   arma::mat Ydetr = y - X * beta;
+  return Ydetr.t();
+}
+
+// function which first-difference detrends a time series supplied in a 1xT matrix
+// and returns a matrix of the same dimension
+// [[Rcpp::export]]
+arma::mat FD_Detrend(const arma::mat& Y, const std::string& model = "c") {
+  if(model == "nc") {
+    return Y;
+  }
+  // set up differenced regressor matrix
+  arma::vec j_sp(Y.n_cols, fill::zeros);
+  j_sp(0) = 1;
+
+  arma::vec time_sp(Y.n_cols, fill::ones);
+  arma::mat X_SP = join_rows(j_sp, time_sp);
+
+  // set up the regular regressor matrix
+  arma::vec j(Y.n_cols, fill::zeros);
+  arma::vec time = seq_cpp(1, Y.n_cols);
+  arma::mat X = join_rows(j, time);
+
+  if(model == "c") {
+    X_SP.shed_col(1);
+    X.shed_col(1);
+  }
+
+  // obtain differences
+  arma::vec y = vectorise(Y);
+  y.rows(1, Y.n_cols-1) = (Y.cols(1, Y.n_cols-1) - Y.cols(0, Y.n_cols-2)).t();
+
+  // estimate parameters and obtain the detrended series
+  arma::colvec beta = arma::solve(X_SP, y);
+  arma::mat Ydetr = Y.t() - X * beta;
   return Ydetr.t();
 }
 
@@ -223,6 +277,8 @@ arma::mat GLS_Detrend(arma::mat dat, std::string model) {
     arma::colvec beta = arma::solve(z_cbar, X_cbar);
     res = dat - as_scalar(beta(0, 0)) - beta(1, 0) * trd.t();
 
+  } else {
+    return dat;
   }
 
   return res;
@@ -237,7 +293,8 @@ arma::field<arma::mat> DF_Reg_field(
     const arma::mat& Y,
     const int& p,
     const std::string& model,
-    const arma::uvec& remove_lags // cherry-pick your lags
+    const arma::uvec& remove_lags = 0, // cherry-pick your lags
+    const int& trim = 0
   ) {
 
   // initialize output field
@@ -263,15 +320,18 @@ arma::field<arma::mat> DF_Reg_field(
     tbr = find(remove_lags < pmax);
   }
 
-  // obtain ADF regression matrix
-  arma::mat X = DF_Reg_Mat(Y, pmax, model);
+  arma::mat X = DF_Reg_Mat(Y, pmax, model, false, trim);
 
   // remove lags from the ADF regression matrix
   if(nz != 0) X.shed_cols(remove_lags.rows(tbr));
 
-  // obtain dependent variable for ADF regression
   arma::mat y = mdiff(Y, 0, true);
-  y = y.rows(p, y.n_rows - 1);
+
+  // do additional trimming of the rows (needed for IC computation)
+  int t_trim = 0;
+  if(trim > pmax) t_trim = trim; else t_trim = pmax;
+
+  y = y.rows(t_trim, y.n_rows-1);
 
   // run OLS, compute residuals
   arma::colvec coef = arma::solve(X, y);
@@ -293,7 +353,7 @@ arma::field<arma::mat> DF_Reg_field(
 }
 
 // function which computes the AR estimate of the spectral density at frequency zero
-// for a time series of AR(k) residuals
+// using residuals from an order-k ADF regression
 // [[Rcpp::export]]
 double S2_AR(
     const arma::mat& dat,
@@ -313,7 +373,6 @@ double S2_AR(
     arma::trans(res) * res / (n - F(2,0).n_rows)
     );
 
-  //double sigmahat2 = arma::as_scalar(F(1, 0));
   // initialise vector for estimated coefficients on lagged differences
   arma::colvec betas;
 
@@ -334,9 +393,10 @@ double S2_AR(
 // [[Rcpp::export]]
 double DF_Reg(
     const arma::mat& Y,                   // time series
-    const int& p,                         // maximum lag order (after removing lags!)
+    const int& p,                         // maximum lag order
     const std::string& model,             // deterministic component
-    const arma::uvec& remove_lags         // cherry-pick your lags
+    const arma::uvec& remove_lags,        // cherry-pick your lags to be removed
+    const int& trim = 0                   // optional additional trimming (for _less_ than T-p-1 rows) of the data for IC computation
   ) {
 
   //initialise pmax, nz
@@ -358,22 +418,27 @@ double DF_Reg(
     tbr = find(remove_lags < pmax);
   }
 
-  arma::mat X = DF_Reg_Mat(Y, pmax, model);
+  arma::mat X = DF_Reg_Mat(Y, pmax, model, false, trim);
 
   // remove lags from the ADF regression matrix
   if(nz != 0) X.shed_cols(remove_lags.rows(tbr));
 
-  int n = X.n_rows, k = X.n_cols;
-
   arma::mat y = mdiff(Y, 0, true);
-  y = y.rows(p, y.n_rows-1);
+
+  // do additional trimming of the rows (needed for IC computation)
+  int t_trim = 0;
+  if(trim > pmax) t_trim = trim; else t_trim = pmax;
+
+  y = y.rows(t_trim, y.n_rows-1);
 
   arma::colvec coef = arma::solve(X, y);
   arma::colvec resid = y - X * coef;
 
-  double sig2 = arma::as_scalar(arma::trans(resid) * resid / (n - k));
+  int n = X.n_rows, k = X.n_cols;
+
+  double sig2 = dot(resid, resid) / (n - k);
   arma::colvec stderrest = arma::sqrt(
-    sig2 * arma::diagvec(arma::inv(arma::trans(X) * X))
+    sig2 * arma::diagvec(arma::inv(X.t() * X))
   );
 
   double tstats = coef(0) / stderrest(0) ;
@@ -386,16 +451,12 @@ double DF_Reg(
 double ERS(const arma::mat& dat,
            const int& p,
            const std::string& model,
-           const arma::uvec& remove_lags
+           const arma::uvec& remove_lags,
+           const int& trim = 0  // optional additional trimming (for _less_ than T-p-1 rows) of the data for IC computation
            ) {
 
   arma::mat dat_detr = GLS_Detrend(dat, model);
-  //double t = 0;
-  //if(model == "c") {
-  double t = DF_Reg(dat_detr, p, "nc", remove_lags);
-  //} else if(model == "ct") {
-   // t = DF_Reg(dat_detr, p, "c", remove_lags);
-  //}
+  double t = DF_Reg(dat_detr, p, "nc", remove_lags, trim);
   return t;
 }
 
@@ -503,35 +564,39 @@ double IC(const arma::mat& Y,
 
   // time series length
   double T = Y.n_elem;
+
+  // _how many_ lags need to be excluded?
+  double nz = accu(remove_lags != 0);
+  // effective number of regressors
+  double k = p - nz;
+
+  // d.o.f
+  double n = T - pmax;
+  // correction factor in MIC
+  double tau = 0;
+
   // do the regression stuff
-  arma::field<arma::mat> reg_results = DF_Reg_field(Y, p, model, remove_lags);
-  // obtain residuals, trimmed levels, rho estimate
+  arma::field<arma::mat> reg_results = DF_Reg_field(Y, p, model, remove_lags, pmax);
+  // obtain residuals, trimmed lagged levels, rho estimate
   arma::mat e = reg_results(0, 0);
-  arma::mat yLag = Y.cols(pmax + 1, Y.n_cols - 2);
-  arma::mat hat_rho = reg_results(1, 0);
-
-  if(pmax > p) e.shed_rows(0, pmax-p-1);
-
-  // number of estimated coefficients on lagged differences in ADF regression
-  double k = reg_results(2, 0).n_elem;
+  arma::mat yLag = Y.cols(pmax, T - 2);
+  double hat_rho = reg_results(1, 0)(0, 0);
 
   // estimate sigma
-  double hat_sigma_sq = arma::as_scalar(arma::trans(e) * e / (T - pmax));
+  double hat_sigma_sq = dot(e, e) / n;
 
-  // compute tau
-  double tau = 0;
-  if(modified) tau = 1 / (hat_sigma_sq) * dot(hat_rho, hat_rho) * dot(yLag, yLag);
+  if(modified) tau = pow(hat_rho, 2) * dot(yLag, yLag) / hat_sigma_sq;
 
   // compute penalty term
   double C;
   if(penalty == "BIC") {
-    C = log(T);
+    C = log(n);
   } else {
     C = 2.0; // AIC
   }
 
   // compute (M)IC
-  double IC = log(hat_sigma_sq) + C * (k + tau) / (T - pmax);
+  double IC = log(hat_sigma_sq) + C * (k + tau) / n;
 
   return IC;
 }
@@ -571,23 +636,38 @@ arma::mat Mtests(
 
 // function which computes a regressor matrix for DF regressions
 // [[Rcpp::export]]
-arma::mat DF_Pred_regressors(const arma::mat& y,
-                     const int& p,
-                     const std::string& model = "nc"
+arma::mat DF_Pred_regressors(
+    const arma::mat& y,
+    const int& p,
+    const std::string& model = "nc"
 ) {
 
+  // double T = y.n_elem;
+  // int dt = 0;
+  // if(model == "c") dt = 1; else if(model == "ct") dt = 2;
+
   // output matrix
-  arma::mat X(1, p+1);
+  //arma::mat X(1, p + 1 + dt);
+
+  arma::mat X(1, p + 1);
+
   // compute first differences
   arma::mat ydiff = mdiff(y, 0, true);
 
   X.col(0) = y.tail_cols(arma::uword(1));
 
-  if(p>0) {
+  if(p > 0) {
     for(int i=1; i<=p; i++) {
       X.col(i) = ydiff.row(ydiff.n_elem-i);
     }
   }
+
+  // if(model == "c") {
+  //   X.tail_cols(1) = 1;
+  // } else if(model == "ct") {
+  //   arma::rowvec d = {1, T};
+  //   X.tail_cols(2) = d;
+  // }
 
   return X;
 }
@@ -597,23 +677,21 @@ arma::mat DF_Pred_regressors(const arma::mat& y,
 // [[Rcpp::export]]
 arma::mat forecast_ADF(const arma::rowvec& y,
                        const arma::colvec& coefs,
-                       const arma::uvec& vars,
+                       const int& pmax,
                        const std::string& model,
                        const int& h,
                        const bool& differences = true
 ) {
   arma::uword Tx = y.n_elem;
-  int pmax = max(vars) - 1;
 
   arma::mat y_and_pred(1, Tx + h, fill::zeros);
   y_and_pred.cols(0, Tx-1) = y;
 
   arma::mat y_diff_pred(1, h, fill::zeros);
 
-  arma::mat X(1, vars.n_elem);
+  arma::mat X(1, pmax);
 
   for(int i = 0; i<h; i++) {
-    //arma::uvec Tx_act = {Tx-2-pmax+i};
     X = DF_Pred_regressors(y_and_pred.cols(0, Tx-1+i), pmax, model);
     y_diff_pred.col(i) = X * coefs;
     y_and_pred.col(Tx+i) = accu(join_rows(y_and_pred.col(Tx-1), y_diff_pred));
@@ -627,3 +705,14 @@ arma::mat forecast_ADF(const arma::rowvec& y,
   }
 
 }
+
+// [[Rcpp::export]]
+int test(int pmax, arma::uvec remove_lags) {
+
+  // _how many_ lags need to be excluded?
+  int nz = accu(remove_lags != 0);
+
+  return pmax - nz;
+}
+
+
