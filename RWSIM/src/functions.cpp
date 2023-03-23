@@ -565,19 +565,27 @@ double IC(const arma::mat& Y,
   // time series length
   double T = Y.n_elem;
 
-  // _how many_ lags need to be excluded?
+  // _how many_ lags need to be _excluded_?
   double nz = accu(remove_lags != 0);
+  // account for parameters of det. trend function?
+  //double q = 0;
+  //if(model == "c") {
+  //  q = 1;
+  //} else if(model == "ct") {
+  //  q = 2;
+  //}
   // effective number of regressors
+  // deterministics + y_t-1 + the Delta Y_t-j - omitted Delta Y_t-j
   double k = p - nz;
 
   // d.o.f
   double n = T - pmax;
-  // correction factor in MIC
+  // initialise correction factor in MIC
   double tau = 0;
 
   // do the regression stuff
   arma::field<arma::mat> reg_results = DF_Reg_field(Y, p, model, remove_lags, pmax);
-  // obtain residuals, trimmed lagged levels, rho estimate
+  // obtain residuals, trimmed lagged levels, estimate rho
   arma::mat e = reg_results(0, 0);
   arma::mat yLag = Y.cols(pmax, T - 2);
   double hat_rho = reg_results(1, 0)(0, 0);
@@ -585,14 +593,15 @@ double IC(const arma::mat& Y,
   // estimate sigma
   double hat_sigma_sq = dot(e, e) / n;
 
+  // if necessary, compute tau for an MIC
   if(modified) tau = pow(hat_rho, 2) * dot(yLag, yLag) / hat_sigma_sq;
 
   // compute penalty term
   double C;
   if(penalty == "BIC") {
-    C = log(n);
+    C = log(n); // BIC
   } else {
-    C = 2.0; // AIC
+    C = 2.0;    // AIC
   }
 
   // compute (M)IC
@@ -705,14 +714,4 @@ arma::mat forecast_ADF(const arma::rowvec& y,
   }
 
 }
-
-// [[Rcpp::export]]
-int test(int pmax, arma::uvec remove_lags) {
-
-  // _how many_ lags need to be excluded?
-  int nz = accu(remove_lags != 0);
-
-  return pmax - nz;
-}
-
 

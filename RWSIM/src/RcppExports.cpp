@@ -283,18 +283,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// test
-int test(int pmax, arma::uvec remove_lags);
-RcppExport SEXP _RWSIM_test(SEXP pmaxSEXP, SEXP remove_lagsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< int >::type pmax(pmaxSEXP);
-    Rcpp::traits::input_parameter< arma::uvec >::type remove_lags(remove_lagsSEXP);
-    rcpp_result_gen = Rcpp::wrap(test(pmax, remove_lags));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_ar1_sim", (DL_FUNC) &_RWSIM_ar1_sim, 2},
@@ -317,7 +305,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_Mtests", (DL_FUNC) &_RWSIM_Mtests, 4},
     {"_RWSIM_DF_Pred_regressors", (DL_FUNC) &_RWSIM_DF_Pred_regressors, 3},
     {"_RWSIM_forecast_ADF", (DL_FUNC) &_RWSIM_forecast_ADF, 6},
-    {"_RWSIM_test", (DL_FUNC) &_RWSIM_test, 2},
     {NULL, NULL, 0}
 };
 

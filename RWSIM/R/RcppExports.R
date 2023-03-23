@@ -81,7 +81,3 @@ forecast_ADF <- function(y, coefs, pmax, model, h, differences = TRUE) {
     .Call(`_RWSIM_forecast_ADF`, y, coefs, pmax, model, h, differences)
 }
 
-test <- function(pmax, remove_lags) {
-    .Call(`_RWSIM_test`, pmax, remove_lags)
-}
-
