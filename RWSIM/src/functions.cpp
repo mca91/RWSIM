@@ -205,9 +205,11 @@ arma::mat Detrend(const arma::mat& Y, const std::string& model = "c") {
 // and returns a matrix of the same dimension
 // [[Rcpp::export]]
 arma::mat FD_Detrend(const arma::mat& Y, const std::string& model = "c") {
+  
   if(model == "nc") {
     return Y;
   }
+  
   // set up differenced regressor matrix
   arma::vec j_sp(Y.n_cols, fill::zeros);
   j_sp(0) = 1;
@@ -215,8 +217,9 @@ arma::mat FD_Detrend(const arma::mat& Y, const std::string& model = "c") {
   arma::vec time_sp(Y.n_cols, fill::ones);
   arma::mat X_SP = join_rows(j_sp, time_sp);
 
+
   // set up the regular regressor matrix
-  arma::vec j(Y.n_cols, fill::zeros);
+  arma::vec j(Y.n_cols, fill::ones);
   arma::vec time = seq_cpp(1, Y.n_cols);
   arma::mat X = join_rows(j, time);
 
