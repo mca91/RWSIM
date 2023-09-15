@@ -230,7 +230,7 @@ arma::mat FD_Detrend(const arma::mat& Y, const std::string& model = "c") {
 
   // obtain differences
   arma::vec y = vectorise(Y);
-  y.rows(1, Y.n_cols-1) = (Y.cols(1, Y.n_cols-1) - Y.cols(0, Y.n_cols-2)).t();
+  y.rows(1, Y.n_cols-1) = ( Y.cols(1, Y.n_cols-1) - Y.cols(0, Y.n_cols-2) ).t();
 
   // estimate parameters and obtain the detrended series
   arma::colvec beta = arma::solve(X_SP, y);
