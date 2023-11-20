@@ -205,11 +205,11 @@ arma::mat Detrend(const arma::mat& Y, const std::string& model = "c") {
 // and returns a matrix of the same dimension
 // [[Rcpp::export]]
 arma::mat FD_Detrend(const arma::mat& Y, const std::string& model = "c") {
-  
+
   if(model == "nc") {
     return Y;
   }
-  
+
   // set up differenced regressor matrix
   arma::vec j_sp(Y.n_cols, fill::zeros);
   j_sp(0) = 1;
@@ -717,4 +717,46 @@ arma::mat forecast_ADF(const arma::rowvec& y,
   }
 
 }
+
+
+// compute J-statistic using RcppArmadillo
+// [[Rcpp::export]]
+double Jstat(arma::vec series_scaled, int R, double alpha, double J_sigma, std::string model) {
+
+  int n = series_scaled.size();
+  arma::vec rho_vec(R);
+
+  // Simulate (un)balanced regressions
+  for(int j = 0; j < R; ++j) {
+
+    // Simulated RW w/ zero initial condition
+    arma::vec r1 = arma::cumsum(arma::join_cols(arma::zeros(1), arma::randn(n - 1) * J_sigma));
+
+    // Regress y on r1 (+ deterministic regressors, if needed)
+    arma::mat X = r1;
+    if(model == "c") {
+      X = arma::join_rows(arma::ones(n), r1);
+    } else if(model == "ct") {
+      X = arma::join_rows(arma::ones(n), arma::linspace(1, n, n), r1);
+    }
+
+    arma::vec est = arma::solve(X, arma::vectorise(series_scaled));
+
+    // Get coefficient estimate for rho
+    rho_vec(j) = est(est.size() - 1);
+  }
+
+  arma::vec alpha_v = arma::vec(1); alpha_v.fill(alpha);
+
+  //Compute and return the IQR / "J-statistic"
+  double stat = arma::as_scalar(
+    arma::abs(
+      arma::quantile(rho_vec, 1-alpha_v/2) - arma::quantile(rho_vec, alpha_v/2)
+    )
+  );
+
+  return stat;
+}
+
+
 

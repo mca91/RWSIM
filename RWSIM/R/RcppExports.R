@@ -81,3 +81,7 @@ forecast_ADF <- function(y, coefs, pmax, model, h, differences = TRUE) {
     .Call(`_RWSIM_forecast_ADF`, y, coefs, pmax, model, h, differences)
 }
 
+Jstat <- function(series_scaled, R, alpha, J_sigma, model) {
+    .Call(`_RWSIM_Jstat`, series_scaled, R, alpha, J_sigma, model)
+}
+

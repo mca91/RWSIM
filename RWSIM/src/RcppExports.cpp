@@ -283,6 +283,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// Jstat
+double Jstat(arma::vec series_scaled, int R, double alpha, double J_sigma, std::string model);
+RcppExport SEXP _RWSIM_Jstat(SEXP series_scaledSEXP, SEXP RSEXP, SEXP alphaSEXP, SEXP J_sigmaSEXP, SEXP modelSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type series_scaled(series_scaledSEXP);
+    Rcpp::traits::input_parameter< int >::type R(RSEXP);
+    Rcpp::traits::input_parameter< double >::type alpha(alphaSEXP);
+    Rcpp::traits::input_parameter< double >::type J_sigma(J_sigmaSEXP);
+    Rcpp::traits::input_parameter< std::string >::type model(modelSEXP);
+    rcpp_result_gen = Rcpp::wrap(Jstat(series_scaled, R, alpha, J_sigma, model));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_ar1_sim", (DL_FUNC) &_RWSIM_ar1_sim, 2},
@@ -305,6 +320,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_RWSIM_Mtests", (DL_FUNC) &_RWSIM_Mtests, 4},
     {"_RWSIM_DF_Pred_regressors", (DL_FUNC) &_RWSIM_DF_Pred_regressors, 3},
     {"_RWSIM_forecast_ADF", (DL_FUNC) &_RWSIM_forecast_ADF, 6},
+    {"_RWSIM_Jstat", (DL_FUNC) &_RWSIM_Jstat, 5},
     {NULL, NULL, 0}
 };
 
